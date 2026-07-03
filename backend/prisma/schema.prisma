@@ -1,0 +1,138 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("EMPLOYEE")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Department {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Item {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Supplier {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  contact     String?
+  email       String?
+  address     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Customer {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  contact     String?
+  email       String?
+  address     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Machine {
+  id          Int      @id @default(autoincrement())
+  machineNum  String   @unique
+  name        String?
+  department  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Unit {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique // e.g., kg, liters, pcs
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model PaymentMode {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique // e.g., CASH, BANK, UPI, CHEQUE
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Transaction {
+  id                  Int      @id @default(autoincrement())
+  srNumber            String   @unique 
+  date                DateTime
+  transactionNumber   String?  
+  supplierInvoiceNum  String?
+  partAccountName     String?
+  type                String
+  item                String?
+  detailNumber        String?
+  department          String?
+  machineNumber       String?
+  servicePerson       String?
+  description         String?
+  unit                String?
+  rate                Float?
+  paidDate            DateTime?
+  paymentMode         String?
+  status              String @default("PENDING")
+  paidAmount          Float  @default(0)
+  remarks             String?
+  attachmentUrl       String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  createdByUserId     Int
+}
+
+model Journal {
+  id                  Int             @id @default(autoincrement())
+  srNumber            String          @unique 
+  date                DateTime
+  description         String?         // Narration
+  details             JournalDetail[]
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+}
+
+model JournalDetail {
+  id          Int      @id @default(autoincrement())
+  journalId   Int
+  journal     Journal  @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  type        String   // "BY" or "TO"
+  accountName String   
+  debit       Float?
+  credit      Float?
+}
+
+model CashBankVoucher {
+  id                  Int      @id @default(autoincrement())
+  srNumber            String   @unique 
+  date                DateTime
+  voucherType         String   // PAYMENT, RECEIPT, CONTRA
+  transactionMode     String   // CASH, BANK
+  partyAccountName    String
+  amount              Float
+  description         String?
+  month               String?
+  transactionId       Int?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}

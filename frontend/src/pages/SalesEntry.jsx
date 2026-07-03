@@ -1,0 +1,204 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  Box, Typography, Paper, Grid, TextField, MenuItem, 
+  Button, Divider, Snackbar, Alert
+} from '@mui/material';
+import SaveIcon from '@mui/icons-material/Save';
+import PrintIcon from '@mui/icons-material/Print';
+import ClearIcon from '@mui/icons-material/Clear';
+import AttachFileIcon from '@mui/icons-material/AttachFile';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { useParams, useNavigate } from 'react-router-dom';
+import { createTransaction, updateTransaction, getTransactionById } from '../services/api';
+import { generateInvoicePDF } from '../utils/exportUtils';
+import dayjs from 'dayjs';
+
+export default function SalesEntry() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const paymentModes = ['CASH', 'BANK', 'UPI', 'CHEQUE'];
+  const statuses = ['DRAFT', 'PENDING', 'COMPLETED'];
+
+  const [formData, setFormData] = useState({
+    date: dayjs(),
+    type: 'SALE',
+    status: 'PENDING',
+    paymentMode: 'CASH',
+  });
+  
+  const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
+
+  useEffect(() => {
+    if (id) {
+      getTransactionById(id).then(res => {
+        const data = res.data;
+        setFormData({
+          ...data,
+          date: data.date ? dayjs(data.date) : null,
+          paidDate: data.paidDate ? dayjs(data.paidDate) : null,
+        });
+      }).catch(err => {
+        console.error(err);
+        setToast({ open: true, message: 'Error fetching transaction details', severity: 'error' });
+      });
+    }
+  }, [id]);
+
+  const handleChange = (field) => (e) => {
+    setFormData({ ...formData, [field]: e.target.value });
+  };
+
+  const handleDateChange = (field) => (val) => {
+    setFormData({ ...formData, [field]: val });
+  };
+
+  const handlePrint = () => {
+    generateInvoicePDF({
+      ...formData,
+      srNumber: formData.srNumber || 'DRAFT',
+      date: formData.date ? formData.date.toISOString() : null
+    });
+  };
+
+  const handleSave = async () => {
+    try {
+      const data = new FormData();
+      Object.keys(formData).forEach(key => {
+        if (key === 'date' && formData[key]) {
+          data.append(key, formData[key].toISOString());
+        } else if (key === 'paidDate' && formData[key]) {
+          data.append(key, formData[key].toISOString());
+        } else if (formData[key] !== null && formData[key] !== undefined) {
+          data.append(key, formData[key]);
+        }
+      });
+      
+      if (id) {
+        await updateTransaction(id, data);
+        setToast({ open: true, message: 'Sale updated successfully!', severity: 'success' });
+      } else {
+        await createTransaction(data);
+        setToast({ open: true, message: 'Sale saved successfully!', severity: 'success' });
+        setTimeout(() => navigate('/sales'), 1500);
+      }
+    } catch (err) {
+      console.error(err);
+      setToast({ open: true, message: 'Error saving sale', severity: 'error' });
+    }
+  };
+
+  return (
+    <Box>
+      <Snackbar open={toast.open} autoHideDuration={6000} onClose={() => setToast({...toast, open: false})}>
+        <Alert severity={toast.severity} sx={{ width: '100%' }}>{toast.message}</Alert>
+      </Snackbar>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+          New Sales Entry
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button variant="outlined" startIcon={<ClearIcon />}>Clear</Button>
+          <Button variant="outlined" startIcon={<PrintIcon />} onClick={handlePrint}>Print</Button>
+          <Button variant="contained" color="secondary" startIcon={<SaveIcon />} onClick={handleSave}>Save Sale</Button>
+        </Box>
+      </Box>
+
+      <Paper sx={{ p: 4, borderRadius: 2 }}>
+        <Typography variant="h6" sx={{ mb: 2, color: 'secondary.main', fontWeight: 600 }}>
+          Sale Details
+        </Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={12} sm={6} md={3}>
+            <TextField fullWidth label="SR Number" disabled value={formData.srNumber || 'AUTO-GEN'} size="small" />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <DatePicker 
+              label="Sale Date" 
+              value={formData.date}
+              onChange={handleDateChange('date')}
+              slotProps={{ textField: { size: 'small', fullWidth: true } }} 
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <TextField fullWidth label="Sales Invoice Number" value={formData.transactionNumber || ''} onChange={handleChange('transactionNumber')} size="small" />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <TextField fullWidth label="Customer Account Name" value={formData.partAccountName || ''} onChange={handleChange('partAccountName')} size="small" />
+          </Grid>
+        </Grid>
+
+        <Divider sx={{ my: 4 }} />
+
+        <Typography variant="h6" sx={{ mb: 2, color: 'secondary.main', fontWeight: 600 }}>
+          Item Details
+        </Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={12} sm={6} md={3}>
+            <TextField fullWidth label="Item Name" value={formData.item || ''} onChange={handleChange('item')} size="small" />
+          </Grid>
+          <Grid item xs={12} md={3}>
+            <TextField fullWidth label="Description" value={formData.description || ''} onChange={handleChange('description')} size="small" />
+          </Grid>
+          <Grid item xs={12} sm={6} md={2}>
+            <TextField fullWidth label="Quantity / Unit" type="number" value={formData.unit || ''} onChange={handleChange('unit')} size="small" />
+          </Grid>
+          <Grid item xs={12} sm={6} md={2}>
+            <TextField fullWidth label="Rate (₹)" value={formData.rate || ''} onChange={handleChange('rate')} type="number" size="small" />
+          </Grid>
+          <Grid item xs={12} sm={6} md={2}>
+            <TextField 
+              fullWidth 
+              label="Total Amount (₹)" 
+              disabled 
+              value={((parseFloat(formData.unit) || 0) * (parseFloat(formData.rate) || 0)).toFixed(2)} 
+              size="small" 
+            />
+          </Grid>
+        </Grid>
+
+        <Divider sx={{ my: 4 }} />
+
+        <Typography variant="h6" sx={{ mb: 2, color: 'secondary.main', fontWeight: 600 }}>
+          Payment & Status
+        </Typography>
+        <Grid container spacing={3} alignItems="center">
+          <Grid item xs={12} sm={6} md={3}>
+            <DatePicker 
+              label="Received Date" 
+              value={formData.paidDate || null}
+              onChange={handleDateChange('paidDate')}
+              slotProps={{ textField: { size: 'small', fullWidth: true } }} 
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <TextField fullWidth select label="Payment Mode" value={formData.paymentMode} onChange={handleChange('paymentMode')} size="small">
+              {paymentModes.map((option) => (
+                <MenuItem key={option} value={option}>{option}</MenuItem>
+              ))}
+            </TextField>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <TextField fullWidth select label="Status" value={formData.status} onChange={handleChange('status')} size="small">
+              {statuses.map((option) => (
+                <MenuItem key={option} value={option}>{option}</MenuItem>
+              ))}
+            </TextField>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Button variant="outlined" component="label" fullWidth startIcon={<AttachFileIcon />} sx={{ height: '40px' }}>
+              Upload Attachment
+              <input 
+                type="file" 
+                hidden 
+                onChange={(e) => setFormData({ ...formData, attachment: e.target.files[0] })}
+              />
+            </Button>
+          </Grid>
+          <Grid item xs={12}>
+            <TextField fullWidth label="Remarks" value={formData.remarks || ''} onChange={handleChange('remarks')} multiline rows={2} size="small" />
+          </Grid>
+        </Grid>
+      </Paper>
+    </Box>
+  );
+}
