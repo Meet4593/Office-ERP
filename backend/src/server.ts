@@ -29,6 +29,31 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Backend is running smoothly' });
 });
 
-app.listen(PORT, () => {
+import bcrypt from 'bcrypt';
+import prisma from './utils/prisma';
+
+const seedAdmin = async () => {
+  try {
+    const email = 'meet17727@gmail.com';
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (!existingUser) {
+      const password = await bcrypt.hash('password123', 10);
+      await prisma.user.create({
+        data: {
+          name: 'Meet',
+          email,
+          password,
+          role: 'ADMIN'
+        }
+      });
+      console.log('Seeded permanent admin user: meet17727@gmail.com');
+    }
+  } catch (error) {
+    console.error('Failed to seed admin:', error);
+  }
+};
+
+app.listen(PORT, async () => {
+  await seedAdmin();
   console.log(`Server is running on port ${PORT}`);
 });
