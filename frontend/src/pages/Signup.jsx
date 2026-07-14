@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { Box, Card, CardContent, Typography, TextField, Button, Avatar, Alert, Link as MuiLink } from '@mui/material';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { login } from '../services/api';
+import PersonAddOutlinedIcon from '@mui/icons-material/PersonAddOutlined';
+import { useNavigate, Link } from 'react-router-dom';
+import { register } from '../services/api';
 
-export default function Login({ onLogin }) {
+export default function Signup({ onLogin }) {
   const navigate = useNavigate();
-  const location = useLocation();
   const [error, setError] = useState('');
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+  });
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -18,12 +21,13 @@ export default function Login({ onLogin }) {
     e.preventDefault();
     try {
       setError('');
-      const res = await login(formData.email, formData.password);
-      localStorage.setItem('token', res.data.token);
-      onLogin(res.data.user);
-      navigate('/');
+      // Register the user
+      await register(formData);
+      // Automatically login? The backend /auth/register returns 201 but no token.
+      // Let's redirect to login page instead for now.
+      navigate('/login', { state: { message: 'Account created successfully! Please login.' } });
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to login');
+      setError(err.response?.data?.message || 'Failed to create account');
     }
   };
 
@@ -37,17 +41,27 @@ export default function Login({ onLogin }) {
     }}>
       <Card sx={{ maxWidth: 400, width: '100%', mx: 2, p: 2, borderRadius: 3, boxShadow: '0 10px 25px rgba(0,0,0,0.05)' }}>
         <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <Avatar sx={{ m: 1, bgcolor: 'primary.main', width: 56, height: 56 }}>
-            <LockOutlinedIcon fontSize="large" />
+          <Avatar sx={{ m: 1, bgcolor: 'secondary.main', width: 56, height: 56 }}>
+            <PersonAddOutlinedIcon fontSize="large" />
           </Avatar>
           <Typography component="h1" variant="h5" sx={{ mb: 3, fontWeight: 'bold' }}>
-            Office ERP Login
+            Create Account
           </Typography>
           
-          {location.state?.message && <Alert severity="success" sx={{ width: '100%', mb: 2 }}>{location.state.message}</Alert>}
           {error && <Alert severity="error" sx={{ width: '100%', mb: 2 }}>{error}</Alert>}
 
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="name"
+              label="Full Name"
+              name="name"
+              autoFocus
+              value={formData.name}
+              onChange={handleChange}
+            />
             <TextField
               margin="normal"
               required
@@ -56,8 +70,6 @@ export default function Login({ onLogin }) {
               label="Email Address"
               name="email"
               type="email"
-              autoComplete="email"
-              autoFocus
               value={formData.email}
               onChange={handleChange}
             />
@@ -69,7 +81,6 @@ export default function Login({ onLogin }) {
               label="Password"
               type="password"
               id="password"
-              autoComplete="current-password"
               value={formData.password}
               onChange={handleChange}
             />
@@ -78,13 +89,14 @@ export default function Login({ onLogin }) {
               fullWidth
               variant="contained"
               size="large"
+              color="secondary"
               sx={{ mt: 4, mb: 2, py: 1.5, fontSize: '1.1rem' }}
             >
-              Sign In
+              Sign Up
             </Button>
             <Box sx={{ textAlign: 'center', mt: 2 }}>
-              <MuiLink component={Link} to="/signup" variant="body2">
-                {"Don't have an account? Sign Up"}
+              <MuiLink component={Link} to="/login" variant="body2">
+                {"Already have an account? Sign In"}
               </MuiLink>
             </Box>
           </Box>

@@ -9,10 +9,12 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useParams, useNavigate } from 'react-router-dom';
 import { createVoucher, updateVoucher, getVoucherById } from '../services/api';
 import dayjs from 'dayjs';
+import useKeyboardNavigation from '../hooks/useKeyboardNavigation';
 
 export default function VoucherEntry() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const handleKeyDown = useKeyboardNavigation();
   
   const voucherTypes = ['PAYMENT', 'RECEIPT', 'CONTRA'];
   const transactionModes = ['CASH', 'BANK'];
@@ -89,7 +91,7 @@ export default function VoucherEntry() {
   };
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box sx={{ p: 2 }} onKeyDown={handleKeyDown}>
       <Snackbar open={toast.open} autoHideDuration={6000} onClose={() => setToast({...toast, open: false})}>
         <Alert severity={toast.severity} sx={{ width: '100%' }}>{toast.message}</Alert>
       </Snackbar>
@@ -98,14 +100,6 @@ export default function VoucherEntry() {
         <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
           {id ? `Edit ${formData.voucherType} Voucher` : 'Accounting Voucher Creation'}
         </Typography>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button variant="outlined" color="secondary" startIcon={<ClearIcon />} onClick={handleClear}>
-            Clear
-          </Button>
-          <Button variant="contained" color="primary" startIcon={<SaveIcon />} onClick={handleSave}>
-            {id ? 'Update Entry' : 'Save Entry'}
-          </Button>
-        </Box>
       </Box>
 
       <Paper sx={{ p: 0, borderRadius: 2, overflow: 'hidden' }}>
@@ -220,6 +214,15 @@ export default function VoucherEntry() {
           </Grid>
         </Box>
       </Paper>
+      
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 3, mb: 4, position: 'sticky', bottom: 16, zIndex: 10 }}>
+        <Button variant="contained" color="inherit" startIcon={<ClearIcon />} sx={{ bgcolor: 'white', color: 'text.primary', '&:hover': { bgcolor: 'grey.100' } }} onClick={handleClear}>
+          Clear
+        </Button>
+        <Button variant="contained" color="primary" size="large" startIcon={<SaveIcon />} onClick={handleSave} sx={{ px: 4 }}>
+          {id ? 'Update Entry' : 'Save Entry'}
+        </Button>
+      </Box>
     </Box>
   );
 }

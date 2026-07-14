@@ -12,10 +12,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { createTransaction, updateTransaction, getTransactionById } from '../services/api';
 import { generateInvoicePDF } from '../utils/exportUtils';
 import dayjs from 'dayjs';
+import useKeyboardNavigation from '../hooks/useKeyboardNavigation';
 
 export default function PurchaseEntry() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const handleKeyDown = useKeyboardNavigation();
   const transactionTypes = ['PURCHASE', 'SALE', 'SERVICE'];
   const paymentModes = ['CASH', 'BANK', 'UPI', 'CHEQUE'];
   const statuses = ['DRAFT', 'PENDING', 'COMPLETED'];
@@ -89,25 +91,14 @@ export default function PurchaseEntry() {
   };
 
   return (
-    <Box>
+    <Box onKeyDown={handleKeyDown}>
       <Snackbar open={toast.open} autoHideDuration={6000} onClose={() => setToast({...toast, open: false})}>
         <Alert severity={toast.severity} sx={{ width: '100%' }}>{toast.message}</Alert>
       </Snackbar>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-          New Transaction Entry
+          {id ? 'Edit Transaction' : 'New Transaction Entry'}
         </Typography>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button variant="outlined" startIcon={<ClearIcon />}>
-            Clear
-          </Button>
-          <Button variant="outlined" startIcon={<PrintIcon />} onClick={handlePrint}>
-            Print
-          </Button>
-          <Button variant="contained" color="primary" startIcon={<SaveIcon />} onClick={handleSave}>
-            Save Entry
-          </Button>
-        </Box>
       </Box>
 
       <Paper sx={{ p: 4, borderRadius: 2 }}>
@@ -231,6 +222,18 @@ export default function PurchaseEntry() {
           </Grid>
         </Grid>
       </Paper>
+      
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 3, mb: 4, position: 'sticky', bottom: 16, zIndex: 10 }}>
+        <Button variant="contained" color="inherit" startIcon={<ClearIcon />} sx={{ bgcolor: 'white', color: 'text.primary', '&:hover': { bgcolor: 'grey.100' } }} onClick={() => setFormData({date: dayjs(), type: 'PURCHASE', status: 'PENDING', paymentMode: 'CASH'})}>
+          Clear
+        </Button>
+        <Button variant="contained" color="info" startIcon={<PrintIcon />} onClick={handlePrint}>
+          Print
+        </Button>
+        <Button variant="contained" color="primary" size="large" startIcon={<SaveIcon />} onClick={handleSave} sx={{ px: 4 }}>
+          Save Entry
+        </Button>
+      </Box>
     </Box>
   );
 }

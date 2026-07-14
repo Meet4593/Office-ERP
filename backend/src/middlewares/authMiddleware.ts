@@ -11,9 +11,20 @@ export interface AuthRequest extends Request {
 }
 
 export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
-  // Temporary bypass for development
-  req.user = { userId: 1, role: 'ADMIN' };
-  next();
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ message: 'Authentication required' });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ message: 'Invalid or expired token' });
+    }
+    req.user = decoded as { userId: number; role: string };
+    next();
+  });
 };
 
 export const requireAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {

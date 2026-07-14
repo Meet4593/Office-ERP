@@ -61,8 +61,9 @@ export default function Layout() {
 
   const handleLogout = () => {
     handleClose();
-    // Perform logout logic (clear tokens, etc.)
-    navigate('/login');
+    localStorage.removeItem('token');
+    // Force reload to update App auth state
+    window.location.href = '/login';
   };
 
   const drawer = (
