@@ -23,7 +23,10 @@ export const changePassword = (currentPassword, newPassword) => api.post('/auth/
 
 export const getDashboardStats = () => api.get('/dashboard/stats');
 
-export const getMasterData = () => api.get('/master');
+export const getMasterData = () => api.get('/master-data');
+export const addMasterRecord = (type, data) => api.post(`/master-data/${type}`, data);
+export const updateMasterRecord = (type, id, data) => api.put(`/master-data/${type}/${id}`, data);
+export const deleteMasterRecord = (type, id) => api.delete(`/master-data/${type}/${id}`);
 
 export const getTransactions = () => api.get('/transactions');
 export const getTransactionById = (id) => api.get(`/transactions/${id}`);
