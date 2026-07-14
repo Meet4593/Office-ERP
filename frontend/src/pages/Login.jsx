@@ -86,18 +86,14 @@ export default function Login({ onLogin }) {
             >
               {loading ? 'Logging in...' : 'Sign In'}
             </Button>
-            <Grid container>
-              <Grid item xs>
-                <Link to="/forgot-password" style={{ textDecoration: 'none', color: '#1976d2', fontWeight: 500, fontSize: '0.875rem' }}>
-                  Forgot password?
-                </Link>
-              </Grid>
-              <Grid item>
-                <Link to="/signup" style={{ textDecoration: 'none', color: '#1976d2', fontWeight: 500, fontSize: '0.875rem' }}>
-                  {"Don't have an account? Sign Up"}
-                </Link>
-              </Grid>
-            </Grid>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
+              <Link to="/forgot-password" style={{ textDecoration: 'none', color: '#1976d2', fontWeight: 500, fontSize: '0.875rem' }}>
+                Forgot password?
+              </Link>
+              <Link to="/signup" style={{ textDecoration: 'none', color: '#1976d2', fontWeight: 500, fontSize: '0.875rem' }}>
+                {"Don't have an account? Sign Up"}
+              </Link>
+            </Box>
           </Box>
         </CardContent>
       </Card>
