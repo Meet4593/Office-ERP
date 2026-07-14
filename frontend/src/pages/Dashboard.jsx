@@ -26,6 +26,7 @@ const StatCard = ({ title, value, icon, color }) => (
 export default function Dashboard() {
   const [stats, setStats] = useState({ totalPurchases: 0, totalSales: 0, pendingPayments: 0 });
   const [recentTransactions, setRecentTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
 
   useEffect(() => {
