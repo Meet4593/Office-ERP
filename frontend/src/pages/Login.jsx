@@ -86,11 +86,11 @@ export default function Login({ onLogin }) {
             >
               {loading ? 'Logging in...' : 'Sign In'}
             </Button>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
-              <Link to="/forgot-password" style={{ textDecoration: 'none', color: '#1976d2', fontWeight: 500, fontSize: '0.875rem' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 2, gap: 1 }}>
+              <Link to="/forgot-password" style={{ textDecoration: 'none', color: '#1976d2', fontWeight: 500, fontSize: '0.9rem' }}>
                 Forgot password?
               </Link>
-              <Link to="/signup" style={{ textDecoration: 'none', color: '#1976d2', fontWeight: 500, fontSize: '0.875rem' }}>
+              <Link to="/signup" style={{ textDecoration: 'none', color: '#1976d2', fontWeight: 500, fontSize: '0.9rem' }}>
                 {"Don't have an account? Sign Up"}
               </Link>
             </Box>
