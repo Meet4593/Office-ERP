@@ -37,6 +37,7 @@ import {
   Email as EmailIcon,
   Badge as BadgeIcon,
   LockReset as LockResetIcon,
+  Logout as LogoutIcon,
 } from '@mui/icons-material';
 import { changePassword } from '../services/api';
 
@@ -208,18 +209,24 @@ export default function Layout() {
           </IconButton>
           <Box sx={{ flexGrow: 1 }} />
           <div>
-            <IconButton
-              size="large"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleMenu}
-              color="inherit"
-            >
-              <Avatar sx={{ width: 36, height: 36, bgcolor: 'primary.main', fontWeight: 'bold' }}>
-                {getInitial()}
-              </Avatar>
-            </IconButton>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Typography variant="body1" sx={{ mr: 2, fontWeight: 500, display: { xs: 'none', sm: 'block' } }}>
+                {user?.name ? `Hi, ${user.name}` : ''}
+              </Typography>
+              <IconButton
+                size="large"
+                aria-label="account of current user"
+                aria-controls="menu-appbar"
+                aria-haspopup="true"
+                onClick={handleMenu}
+                color="inherit"
+                sx={{ p: 0 }}
+              >
+                <Avatar sx={{ width: 40, height: 40, bgcolor: 'primary.main', fontWeight: 'bold' }}>
+                  {getInitial()}
+                </Avatar>
+              </IconButton>
+            </Box>
             <Menu
               id="menu-appbar"
               anchorEl={anchorEl}
@@ -234,10 +241,25 @@ export default function Layout() {
               }}
               open={Boolean(anchorEl)}
               onClose={handleClose}
-              sx={{ mt: 1 }}
+              sx={{ mt: 1.5 }}
+              PaperProps={{
+                elevation: 3,
+                sx: { width: 180, borderRadius: 2 }
+              }}
             >
-              <MenuItem onClick={handleOpenProfile}>Profile</MenuItem>
-              <MenuItem onClick={handleLogout} sx={{ color: 'error.main' }}>Logout</MenuItem>
+              <MenuItem onClick={handleOpenProfile} sx={{ py: 1.5 }}>
+                <ListItemIcon sx={{ minWidth: 36 }}>
+                  <PersonIcon fontSize="small" color="primary" />
+                </ListItemIcon>
+                <Typography variant="body1" fontWeight="500">Profile</Typography>
+              </MenuItem>
+              <Divider sx={{ my: 0.5 }} />
+              <MenuItem onClick={handleLogout} sx={{ py: 1.5 }}>
+                <ListItemIcon sx={{ minWidth: 36 }}>
+                  <LogoutIcon fontSize="small" color="error" />
+                </ListItemIcon>
+                <Typography variant="body1" fontWeight="500" color="error">Logout</Typography>
+              </MenuItem>
             </Menu>
           </div>
         </Toolbar>
