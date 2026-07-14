@@ -200,7 +200,7 @@ export default function ServiceEntry() {
         </Grid>
       </Paper>
       
-      <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 2, mt: 3, mb: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 3, mb: 4 }}>
         <Button variant="contained" color="primary" size="large" startIcon={<SaveIcon />} onClick={handleSave} sx={{ px: 4 }}>
           Save Service
         </Button>
