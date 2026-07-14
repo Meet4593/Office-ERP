@@ -118,7 +118,9 @@ export const forgotPassword = async (req: Request, res: Response) => {
 
     if (process.env.SMTP_USER && process.env.SMTP_PASS) {
       const transporter = nodemailer.createTransport({
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true, // use SSL
         auth: {
           user: process.env.SMTP_USER,
           pass: process.env.SMTP_PASS
@@ -139,9 +141,9 @@ export const forgotPassword = async (req: Request, res: Response) => {
     }
 
     res.json({ message: 'If the email exists, a password reset link has been sent (or logged to server console in dev mode).' });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Forgot password error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: error.message || 'Server error' });
   }
 };
 
