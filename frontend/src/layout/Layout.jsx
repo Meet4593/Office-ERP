@@ -22,7 +22,10 @@ import {
   DialogActions,
   Button,
   TextField,
-  Alert
+  Alert,
+  FormControl,
+  InputLabel,
+  Select
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -40,7 +43,7 @@ import {
   Logout as LogoutIcon,
 } from '@mui/icons-material';
 import { changePassword, updateSecurityQuestion } from '../services/api';
-import { FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+
 
 const drawerWidth = 260;
 
