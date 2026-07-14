@@ -8,6 +8,7 @@ export default function Login({ onLogin }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ email: '', password: '' });
 
   const handleChange = (e) => {
@@ -16,6 +17,7 @@ export default function Login({ onLogin }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       setError('');
       const res = await login(formData.email, formData.password);
@@ -25,6 +27,7 @@ export default function Login({ onLogin }) {
       navigate('/');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to login');
+      setLoading(false);
     }
   };
 
