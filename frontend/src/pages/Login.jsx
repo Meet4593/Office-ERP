@@ -20,6 +20,7 @@ export default function Login({ onLogin }) {
       setError('');
       const res = await login(formData.email, formData.password);
       localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
       onLogin(res.data.user);
       navigate('/');
     } catch (err) {

@@ -26,9 +26,17 @@ const StatCard = ({ title, value, icon, color }) => (
 export default function Dashboard() {
   const [stats, setStats] = useState({ totalPurchases: 0, totalSales: 0, pendingPayments: 0 });
   const [recentTransactions, setRecentTransactions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
+    const fetchUser = () => {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
+    };
+    fetchUser();
+    
     const fetchData = async () => {
       try {
         const [statsRes, transRes] = await Promise.all([
@@ -53,9 +61,11 @@ export default function Dashboard() {
 
   return (
     <Box>
-      <Typography variant="h4" sx={{ mb: 4, fontWeight: 'bold' }}>
-        Dashboard Overview
-      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+        <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+          {user ? `Welcome back, ${user.name} 👋` : 'Dashboard Overview'}
+        </Typography>
+      </Box>
       
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={4}>

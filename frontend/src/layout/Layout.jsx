@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
@@ -16,6 +16,11 @@ import {
   Avatar,
   Menu,
   MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -24,9 +29,11 @@ import {
   PointOfSale as PointOfSaleIcon,
   Build as BuildIcon,
   Settings as SettingsIcon,
-  AccountCircle,
   Book as BookIcon,
   AccountBalance as AccountBalanceIcon,
+  Person as PersonIcon,
+  Email as EmailIcon,
+  Badge as BadgeIcon,
 } from '@mui/icons-material';
 
 const drawerWidth = 260;
@@ -44,8 +51,18 @@ const menuItems = [
 export default function Layout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -62,8 +79,24 @@ export default function Layout() {
   const handleLogout = () => {
     handleClose();
     localStorage.removeItem('token');
-    // Force reload to update App auth state
+    localStorage.removeItem('user');
     window.location.href = '/login';
+  };
+
+  const handleOpenProfile = () => {
+    handleClose();
+    setProfileOpen(true);
+  };
+
+  const handleCloseProfile = () => {
+    setProfileOpen(false);
+  };
+
+  const getInitial = () => {
+    if (user && user.name) {
+      return user.name.charAt(0).toUpperCase();
+    }
+    return 'U';
   };
 
   const drawer = (
@@ -73,8 +106,10 @@ export default function Layout() {
         alignItems: 'center', 
         justifyContent: 'center',
         px: [1],
-        py: 2
+        py: 2,
+        gap: 1
       }}>
+        <img src="/logo.png" alt="Office ERP Pro Logo" style={{ width: 40, height: 40, objectFit: 'contain' }} />
         <Typography variant="h6" component="div" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
           Office ERP Pro
         </Typography>
@@ -114,7 +149,7 @@ export default function Layout() {
       <Divider />
       <Box sx={{ p: 2 }}>
         <Typography variant="caption" color="text.secondary">
-          v1.0.0 &copy; 2026 Office Mgmt
+          v1.0.0 &copy; 2026 Office ERP Pro
         </Typography>
       </Box>
     </Box>
@@ -153,7 +188,9 @@ export default function Layout() {
               onClick={handleMenu}
               color="inherit"
             >
-              <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>A</Avatar>
+              <Avatar sx={{ width: 36, height: 36, bgcolor: 'primary.main', fontWeight: 'bold' }}>
+                {getInitial()}
+              </Avatar>
             </IconButton>
             <Menu
               id="menu-appbar"
@@ -169,9 +206,10 @@ export default function Layout() {
               }}
               open={Boolean(anchorEl)}
               onClose={handleClose}
+              sx={{ mt: 1 }}
             >
-              <MenuItem onClick={handleClose}>Profile</MenuItem>
-              <MenuItem onClick={handleLogout}>Logout</MenuItem>
+              <MenuItem onClick={handleOpenProfile}>Profile</MenuItem>
+              <MenuItem onClick={handleLogout} sx={{ color: 'error.main' }}>Logout</MenuItem>
             </Menu>
           </div>
         </Toolbar>
@@ -218,6 +256,47 @@ export default function Layout() {
       >
         <Outlet />
       </Box>
+
+      {/* Profile Dialog */}
+      <Dialog open={profileOpen} onClose={handleCloseProfile} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold', pt: 3 }}>User Profile</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3, mt: 1 }}>
+            <Avatar sx={{ width: 80, height: 80, bgcolor: 'primary.main', fontSize: '2rem', mb: 2 }}>
+              {getInitial()}
+            </Avatar>
+            <Typography variant="h5" fontWeight="bold">{user?.name || 'User'}</Typography>
+            <Typography color="text.secondary" variant="body2">{user?.role || 'EMPLOYEE'}</Typography>
+          </Box>
+          <Divider sx={{ mb: 2 }} />
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <PersonIcon sx={{ color: 'action.active', mr: 2 }} />
+            <Box>
+              <Typography variant="caption" color="text.secondary">Full Name</Typography>
+              <Typography variant="body1">{user?.name || 'N/A'}</Typography>
+            </Box>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <EmailIcon sx={{ color: 'action.active', mr: 2 }} />
+            <Box>
+              <Typography variant="caption" color="text.secondary">Email Address</Typography>
+              <Typography variant="body1">{user?.email || 'N/A'}</Typography>
+            </Box>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <BadgeIcon sx={{ color: 'action.active', mr: 2 }} />
+            <Box>
+              <Typography variant="caption" color="text.secondary">Role / Permission</Typography>
+              <Typography variant="body1">{user?.role || 'N/A'}</Typography>
+            </Box>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 3, pt: 1, justifyContent: 'center' }}>
+          <Button onClick={handleCloseProfile} variant="outlined" fullWidth>
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
