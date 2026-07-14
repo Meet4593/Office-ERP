@@ -1,0 +1,119 @@
+import React, { useState, useEffect } from 'react';
+import { Box, Card, CardContent, Typography, TextField, Button, Alert, Avatar } from '@mui/material';
+import PasswordIcon from '@mui/icons-material/Password';
+import { resetPassword } from '../services/api';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+
+const ResetPassword = () => {
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [status, setStatus] = useState({ type: '', msg: '' });
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  
+  const token = searchParams.get('token');
+  const email = searchParams.get('email');
+
+  useEffect(() => {
+    if (!token || !email) {
+      setStatus({ type: 'error', msg: 'Invalid or missing reset token in the URL.' });
+    }
+  }, [token, email]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!token || !email) return;
+
+    if (password !== confirmPassword) {
+      setStatus({ type: 'error', msg: 'Passwords do not match!' });
+      return;
+    }
+
+    if (password.length < 6) {
+      setStatus({ type: 'error', msg: 'Password must be at least 6 characters.' });
+      return;
+    }
+
+    setLoading(true);
+    setStatus({ type: '', msg: '' });
+    try {
+      const res = await resetPassword(email, token, password);
+      setStatus({ type: 'success', msg: res.data?.message || 'Password reset successfully!' });
+      setTimeout(() => {
+        navigate('/login', { state: { message: 'Password reset successfully. Please log in.' }});
+      }, 2000);
+    } catch (err) {
+      setStatus({ type: 'error', msg: err.response?.data?.message || 'Failed to reset password' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Box sx={{ 
+      minHeight: '100vh', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      background: 'linear-gradient(135deg, #f6f8fb 0%, #e5e9f0 100%)'
+    }}>
+      <Card sx={{ maxWidth: 400, width: '100%', mx: 2, p: 2, borderRadius: 3, boxShadow: '0 10px 25px rgba(0,0,0,0.05)' }}>
+        <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <Avatar sx={{ m: 1, bgcolor: 'success.main', width: 56, height: 56 }}>
+            <PasswordIcon fontSize="large" />
+          </Avatar>
+          <Typography component="h1" variant="h5" sx={{ mb: 1, fontWeight: 'bold' }}>
+            Set New Password
+          </Typography>
+          
+          {status.msg && <Alert severity={status.type} sx={{ width: '100%', mb: 2 }}>{status.msg}</Alert>}
+
+          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="password"
+              label="New Password"
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={loading || !token || !email}
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="confirmPassword"
+              label="Confirm New Password"
+              type="password"
+              id="confirmPassword"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              disabled={loading || !token || !email}
+            />
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              color="success"
+              sx={{ mt: 3, mb: 2, py: 1.5, fontWeight: 'bold' }}
+              disabled={loading || !token || !email}
+            >
+              {loading ? 'Resetting...' : 'Reset Password'}
+            </Button>
+            <Box sx={{ textAlign: 'center' }}>
+              <Link to="/login" style={{ textDecoration: 'none', color: '#1976d2', fontWeight: 500 }}>
+                Back to Login
+              </Link>
+            </Box>
+          </Box>
+        </CardContent>
+      </Card>
+    </Box>
+  );
+};
+
+export default ResetPassword;

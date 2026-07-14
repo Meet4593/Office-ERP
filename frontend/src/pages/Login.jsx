@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Card, CardContent, Typography, TextField, Button, Avatar, Alert, Link as MuiLink } from '@mui/material';
+import { Box, Card, CardContent, Typography, TextField, Button, Avatar, Alert, Link as MuiLink, Grid } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { login } from '../services/api';
@@ -78,16 +78,23 @@ export default function Login({ onLogin }) {
               type="submit"
               fullWidth
               variant="contained"
-              size="large"
-              sx={{ mt: 4, mb: 2, py: 1.5, fontSize: '1.1rem' }}
+              sx={{ mt: 3, mb: 2, py: 1.5, fontWeight: 'bold' }}
+              disabled={loading}
             >
-              Sign In
+              {loading ? 'Logging in...' : 'Sign In'}
             </Button>
-            <Box sx={{ textAlign: 'center', mt: 2 }}>
-              <MuiLink component={Link} to="/signup" variant="body2">
-                {"Don't have an account? Sign Up"}
-              </MuiLink>
-            </Box>
+            <Grid container>
+              <Grid item xs>
+                <Link to="/forgot-password" style={{ textDecoration: 'none', color: '#1976d2', fontWeight: 500, fontSize: '0.875rem' }}>
+                  Forgot password?
+                </Link>
+              </Grid>
+              <Grid item>
+                <Link to="/signup" style={{ textDecoration: 'none', color: '#1976d2', fontWeight: 500, fontSize: '0.875rem' }}>
+                  {"Don't have an account? Sign Up"}
+                </Link>
+              </Grid>
+            </Grid>
           </Box>
         </CardContent>
       </Card>

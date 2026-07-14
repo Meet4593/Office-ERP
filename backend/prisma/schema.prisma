@@ -12,9 +12,11 @@ model User {
   email     String   @unique
   password  String
   name      String
-  role      String   @default("EMPLOYEE")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  role             String    @default("EMPLOYEE")
+  resetToken       String?
+  resetTokenExpiry DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 }
 
 model Department {
