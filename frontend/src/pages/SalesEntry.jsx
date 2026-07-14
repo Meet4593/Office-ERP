@@ -197,15 +197,15 @@ export default function SalesEntry() {
         </Grid>
       </Paper>
       
-      <Box sx={{ display: 'flex', gap: 2, mt: 3, mb: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 2, mt: 3, mb: 4 }}>
         <Button variant="contained" color="secondary" size="large" startIcon={<SaveIcon />} onClick={handleSave} sx={{ px: 4 }}>
           Save Sale
         </Button>
-        <Button variant="contained" color="inherit" startIcon={<ClearIcon />} sx={{ bgcolor: 'white', color: 'text.primary', '&:hover': { bgcolor: 'grey.100' } }} onClick={() => setFormData({date: dayjs(), type: 'SALE', status: 'PENDING', paymentMode: 'CASH'})}>
-          Clear
-        </Button>
         <Button variant="contained" color="info" startIcon={<PrintIcon />} onClick={handlePrint}>
           Print
+        </Button>
+        <Button variant="contained" color="inherit" startIcon={<ClearIcon />} sx={{ bgcolor: 'white', color: 'text.primary', '&:hover': { bgcolor: 'grey.100' } }} onClick={() => setFormData({date: dayjs(), type: 'SALE', status: 'PENDING', paymentMode: 'CASH'})}>
+          Clear
         </Button>
       </Box>
     </Box>

@@ -215,7 +215,7 @@ export default function VoucherEntry() {
         </Box>
       </Paper>
       
-      <Box sx={{ display: 'flex', gap: 2, mt: 3, mb: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 2, mt: 3, mb: 4 }}>
         <Button variant="contained" color="primary" size="large" startIcon={<SaveIcon />} onClick={handleSave} sx={{ px: 4 }}>
           {id ? 'Update Entry' : 'Save Entry'}
         </Button>
