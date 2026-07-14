@@ -86,12 +86,7 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
-  const getGreeting = () => {
-    const hour = dayjs().hour();
-    if (hour < 12) return 'Good morning';
-    if (hour < 18) return 'Good afternoon';
-    return 'Good evening';
-  };
+
 
   if (loading) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}><CircularProgress size={60} /></Box>;
@@ -103,7 +98,7 @@ export default function Dashboard() {
       <Box sx={{ mb: 5, display: 'flex', alignItems: 'center' }}>
         <Box>
           <Typography variant="h4" fontWeight="800" sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#1e293b' }}>
-            {getGreeting()}, {user?.name || 'User'} <WavingHandIcon sx={{ color: '#fbbf24' }} />
+            Hello, {user?.name || 'User'} <WavingHandIcon sx={{ color: '#fbbf24' }} />
           </Typography>
           <Typography variant="subtitle1" color="text.secondary" sx={{ mt: 0.5 }}>
             Here is what's happening with your business today.
