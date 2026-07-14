@@ -39,7 +39,8 @@ import {
   LockReset as LockResetIcon,
   Logout as LogoutIcon,
 } from '@mui/icons-material';
-import { changePassword } from '../services/api';
+import { changePassword, updateSecurityQuestion } from '../services/api';
+import { FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 
 const drawerWidth = 260;
 
@@ -58,8 +59,11 @@ export default function Layout() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
+  const [secQOpen, setSecQOpen] = useState(false);
   const [passForm, setPassForm] = useState({ current: '', newPass: '' });
   const [passMsg, setPassMsg] = useState({ type: '', text: '' });
+  const [secQForm, setSecQForm] = useState({ currentPassword: '', securityQuestion: '', securityAnswer: '' });
+  const [secQMsg, setSecQMsg] = useState({ type: '', text: '' });
   const [user, setUser] = useState(null);
   
   const navigate = useNavigate();
@@ -118,6 +122,25 @@ export default function Layout() {
       }, 1500);
     } catch (err) {
       setPassMsg({ type: 'error', text: err.response?.data?.message || 'Update failed' });
+    }
+  };
+
+  const handleOpenSecQ = () => setSecQOpen(true);
+  const handleCloseSecQ = () => {
+    setSecQOpen(false);
+    setSecQForm({ currentPassword: '', securityQuestion: '', securityAnswer: '' });
+    setSecQMsg({ type: '', text: '' });
+  };
+
+  const handleSecQSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setSecQMsg({ type: '', text: '' });
+      await updateSecurityQuestion(secQForm.currentPassword, secQForm.securityQuestion, secQForm.securityAnswer);
+      setSecQMsg({ type: 'success', text: 'Security question updated successfully!' });
+      setTimeout(() => handleCloseSecQ(), 1500);
+    } catch (err) {
+      setSecQMsg({ type: 'error', text: err.response?.data?.message || 'Update failed' });
     }
   };
 
@@ -345,6 +368,9 @@ export default function Layout() {
           <Button onClick={handleOpenPassword} variant="contained" color="secondary" startIcon={<LockResetIcon />} fullWidth>
             Change Password
           </Button>
+          <Button onClick={handleOpenSecQ} variant="contained" color="info" startIcon={<LockResetIcon />} fullWidth>
+            Security Question
+          </Button>
           <Button onClick={handleCloseProfile} variant="outlined" fullWidth>
             Close
           </Button>
@@ -384,6 +410,57 @@ export default function Layout() {
           <DialogActions sx={{ px: 3, pb: 3 }}>
             <Button onClick={handleClosePassword} color="inherit">Cancel</Button>
             <Button type="submit" variant="contained" color="primary">Update Password</Button>
+          </DialogActions>
+        </Box>
+      </Dialog>
+
+      {/* Change Security Question Dialog */}
+      <Dialog open={secQOpen} onClose={handleCloseSecQ} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold' }}>Change Security Question</DialogTitle>
+        <Box component="form" onSubmit={handleSecQSubmit}>
+          <DialogContent>
+            {secQMsg.text && (
+              <Alert severity={secQMsg.type} sx={{ mb: 2 }}>{secQMsg.text}</Alert>
+            )}
+            <TextField
+              fullWidth
+              margin="dense"
+              label="Current Password (to verify it's you)"
+              type="password"
+              required
+              autoComplete="current-password"
+              value={secQForm.currentPassword}
+              onChange={(e) => setSecQForm({ ...secQForm, currentPassword: e.target.value })}
+            />
+            <FormControl fullWidth margin="dense" required sx={{ mt: 2 }}>
+              <InputLabel>New Security Question</InputLabel>
+              <Select
+                value={secQForm.securityQuestion}
+                label="New Security Question"
+                onChange={(e) => setSecQForm({ ...secQForm, securityQuestion: e.target.value })}
+              >
+                <MenuItem value="What was the name of your first pet?">What was the name of your first pet?</MenuItem>
+                <MenuItem value="What city were you born in?">What city were you born in?</MenuItem>
+                <MenuItem value="What is your mother's maiden name?">What is your mother's maiden name?</MenuItem>
+                <MenuItem value="What was your favorite childhood movie?">What was your favorite childhood movie?</MenuItem>
+                <MenuItem value="What is your favorite food?">What is your favorite food?</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField
+              fullWidth
+              margin="dense"
+              label="New Security Answer"
+              type="text"
+              required
+              sx={{ mt: 2 }}
+              autoComplete="off"
+              value={secQForm.securityAnswer}
+              onChange={(e) => setSecQForm({ ...secQForm, securityAnswer: e.target.value })}
+            />
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 3 }}>
+            <Button onClick={handleCloseSecQ} color="inherit">Cancel</Button>
+            <Button type="submit" variant="contained" color="primary">Save Changes</Button>
           </DialogActions>
         </Box>
       </Dialog>

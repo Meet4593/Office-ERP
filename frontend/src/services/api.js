@@ -20,6 +20,7 @@ api.interceptors.request.use((config) => {
 export const login = (email, password) => api.post('/auth/login', { email, password });
 export const register = (userData) => api.post('/auth/register', userData);
 export const changePassword = (currentPassword, newPassword) => api.post('/auth/change-password', { currentPassword, newPassword });
+export const updateSecurityQuestion = (currentPassword, securityQuestion, securityAnswer) => api.post('/auth/update-security-question', { currentPassword, securityQuestion, securityAnswer });
 export const forgotPassword = (email) => api.post('/auth/forgot-password', { email });
 export const resetPassword = (email, securityAnswer, newPassword) => api.post('/auth/reset-password', { email, securityAnswer, newPassword });
 
