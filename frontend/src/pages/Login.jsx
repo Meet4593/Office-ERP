@@ -77,19 +77,21 @@ export default function Login({ onLogin }) {
               value={formData.password}
               onChange={handleChange}
             />
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 0.5, mb: 1 }}>
+              <Link to="/forgot-password" style={{ textDecoration: 'none', color: '#1976d2', fontWeight: 500, fontSize: '0.85rem' }}>
+                Forgot password?
+              </Link>
+            </Box>
             <Button
               type="submit"
               fullWidth
               variant="contained"
-              sx={{ mt: 3, mb: 2, py: 1.5, fontWeight: 'bold' }}
+              sx={{ mt: 1, mb: 2, py: 1.5, fontWeight: 'bold' }}
               disabled={loading}
             >
               {loading ? 'Logging in...' : 'Sign In'}
             </Button>
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 2, gap: 1 }}>
-              <Link to="/forgot-password" style={{ textDecoration: 'none', color: '#1976d2', fontWeight: 500, fontSize: '0.9rem' }}>
-                Forgot password?
-              </Link>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
               <Link to="/signup" style={{ textDecoration: 'none', color: '#1976d2', fontWeight: 500, fontSize: '0.9rem' }}>
                 {"Don't have an account? Sign Up"}
               </Link>
