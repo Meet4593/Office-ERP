@@ -2,28 +2,29 @@ import React, { useState, useEffect } from 'react';
 import { Box, Card, CardContent, Typography, TextField, Button, Alert, Avatar } from '@mui/material';
 import PasswordIcon from '@mui/icons-material/Password';
 import { resetPassword } from '../services/api';
-import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 
 const ResetPassword = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [securityAnswer, setSecurityAnswer] = useState('');
   const [status, setStatus] = useState({ type: '', msg: '' });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const location = useLocation();
   
-  const token = searchParams.get('token');
-  const email = searchParams.get('email');
+  const email = location.state?.email;
+  const securityQuestion = location.state?.securityQuestion;
 
   useEffect(() => {
-    if (!token || !email) {
-      setStatus({ type: 'error', msg: 'Invalid or missing reset token in the URL.' });
+    if (!email || !securityQuestion) {
+      setStatus({ type: 'error', msg: 'Missing email or security question. Please restart the reset process.' });
     }
-  }, [token, email]);
+  }, [email, securityQuestion]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!token || !email) return;
+    if (!email || !securityQuestion) return;
 
     if (password !== confirmPassword) {
       setStatus({ type: 'error', msg: 'Passwords do not match!' });
@@ -38,7 +39,7 @@ const ResetPassword = () => {
     setLoading(true);
     setStatus({ type: '', msg: '' });
     try {
-      const res = await resetPassword(email, token, password);
+      const res = await resetPassword(email, securityAnswer, password);
       setStatus({ type: 'success', msg: res.data?.message || 'Password reset successfully!' });
       setTimeout(() => {
         navigate('/login', { state: { message: 'Password reset successfully. Please log in.' }});
@@ -63,13 +64,30 @@ const ResetPassword = () => {
           <Avatar sx={{ m: 1, bgcolor: 'success.main', width: 56, height: 56 }}>
             <PasswordIcon fontSize="large" />
           </Avatar>
-          <Typography component="h1" variant="h5" sx={{ mb: 1, fontWeight: 'bold' }}>
-            Set New Password
+          <Typography component="h1" variant="h5" sx={{ mb: 1, fontWeight: 'bold', textAlign: 'center' }}>
+            Answer Security Question
           </Typography>
+          {securityQuestion && (
+            <Typography variant="body1" color="primary" sx={{ mb: 3, textAlign: 'center', fontWeight: 'bold' }}>
+              Q: {securityQuestion}
+            </Typography>
+          )}
           
           {status.msg && <Alert severity={status.type} sx={{ width: '100%', mb: 2 }}>{status.msg}</Alert>}
 
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="securityAnswer"
+              label="Security Answer"
+              type="text"
+              id="securityAnswer"
+              value={securityAnswer}
+              onChange={(e) => setSecurityAnswer(e.target.value)}
+              disabled={loading || !email || !securityQuestion}
+            />
             <TextField
               margin="normal"
               required
@@ -80,7 +98,7 @@ const ResetPassword = () => {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              disabled={loading || !token || !email}
+              disabled={loading || !email || !securityQuestion}
             />
             <TextField
               margin="normal"
@@ -92,7 +110,7 @@ const ResetPassword = () => {
               id="confirmPassword"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              disabled={loading || !token || !email}
+              disabled={loading || !email || !securityQuestion}
             />
             <Button
               type="submit"
@@ -100,7 +118,7 @@ const ResetPassword = () => {
               variant="contained"
               color="success"
               sx={{ mt: 3, mb: 2, py: 1.5, fontWeight: 'bold' }}
-              disabled={loading || !token || !email}
+              disabled={loading || !email || !securityQuestion}
             >
               {loading ? 'Resetting...' : 'Reset Password'}
             </Button>

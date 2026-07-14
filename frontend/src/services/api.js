@@ -21,7 +21,7 @@ export const login = (email, password) => api.post('/auth/login', { email, passw
 export const register = (userData) => api.post('/auth/register', userData);
 export const changePassword = (currentPassword, newPassword) => api.post('/auth/change-password', { currentPassword, newPassword });
 export const forgotPassword = (email) => api.post('/auth/forgot-password', { email });
-export const resetPassword = (email, token, newPassword) => api.post('/auth/reset-password', { email, token, newPassword });
+export const resetPassword = (email, securityAnswer, newPassword) => api.post('/auth/reset-password', { email, securityAnswer, newPassword });
 
 export const getDashboardStats = () => api.get('/dashboard/stats');
 

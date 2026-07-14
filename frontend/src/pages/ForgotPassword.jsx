@@ -16,7 +16,7 @@ const ForgotPassword = () => {
     setStatus({ type: '', msg: '' });
     try {
       const res = await forgotPassword(email);
-      setStatus({ type: 'success', msg: res.data?.message || 'Password reset link sent! Check your email.' });
+      navigate('/reset-password', { state: { email, securityQuestion: res.data.securityQuestion } });
     } catch (err) {
       setStatus({ type: 'error', msg: err.response?.data?.message || 'Failed to request password reset' });
     } finally {
@@ -41,7 +41,7 @@ const ForgotPassword = () => {
             Forgot Password
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3, textAlign: 'center' }}>
-            Enter your email address and we'll send you a link to reset your password.
+            Enter your email address to reset your password using your security question.
           </Typography>
           
           {status.msg && <Alert severity={status.type} sx={{ width: '100%', mb: 2 }}>{status.msg}</Alert>}
@@ -67,7 +67,7 @@ const ForgotPassword = () => {
               sx={{ mt: 3, mb: 2, py: 1.5, fontWeight: 'bold' }}
               disabled={loading}
             >
-              {loading ? 'Sending...' : 'Send Reset Link'}
+              {loading ? 'Verifying...' : 'Continue'}
             </Button>
             <Box sx={{ textAlign: 'center' }}>
               <Link to="/login" style={{ textDecoration: 'none', color: '#1976d2', fontWeight: 500 }}>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Card, CardContent, Typography, TextField, Button, Avatar, Alert, Link as MuiLink } from '@mui/material';
+import { Box, Card, CardContent, Typography, TextField, Button, Avatar, Alert, Link as MuiLink, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import PersonAddOutlinedIcon from '@mui/icons-material/PersonAddOutlined';
 import { useNavigate, Link } from 'react-router-dom';
 import { register } from '../services/api';
@@ -11,6 +11,8 @@ export default function Signup({ onLogin }) {
     name: '',
     email: '',
     password: '',
+    securityQuestion: '',
+    securityAnswer: '',
   });
 
   const handleChange = (e) => {
@@ -82,6 +84,34 @@ export default function Signup({ onLogin }) {
               type="password"
               id="password"
               value={formData.password}
+              onChange={handleChange}
+            />
+            <FormControl fullWidth margin="normal" required>
+              <InputLabel id="security-question-label">Security Question</InputLabel>
+              <Select
+                labelId="security-question-label"
+                id="securityQuestion"
+                name="securityQuestion"
+                value={formData.securityQuestion}
+                label="Security Question"
+                onChange={handleChange}
+              >
+                <MenuItem value="What was the name of your first pet?">What was the name of your first pet?</MenuItem>
+                <MenuItem value="What city were you born in?">What city were you born in?</MenuItem>
+                <MenuItem value="What is your mother's maiden name?">What is your mother's maiden name?</MenuItem>
+                <MenuItem value="What was your favorite childhood movie?">What was your favorite childhood movie?</MenuItem>
+                <MenuItem value="What is your favorite food?">What is your favorite food?</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="securityAnswer"
+              label="Security Answer"
+              type="text"
+              id="securityAnswer"
+              value={formData.securityAnswer}
               onChange={handleChange}
             />
             <Button
