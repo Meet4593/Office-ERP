@@ -42,7 +42,7 @@ export default function Login({ onLogin }) {
             <LockOutlinedIcon fontSize="large" />
           </Avatar>
           <Typography component="h1" variant="h5" sx={{ mb: 3, fontWeight: 'bold' }}>
-            Office ERP Login
+            Nexus Login
           </Typography>
           
           {location.state?.message && <Alert severity="success" sx={{ width: '100%', mb: 2 }}>{location.state.message}</Alert>}

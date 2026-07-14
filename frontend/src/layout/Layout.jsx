@@ -138,9 +138,9 @@ export default function Layout() {
         py: 2,
         gap: 1
       }}>
-        <img src="/logo.png" alt="Office ERP Pro Logo" style={{ width: 40, height: 40, objectFit: 'contain' }} />
-        <Typography variant="h6" component="div" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-          Office ERP Pro
+        <img src="/logo.png" alt="Nexus Logo" style={{ width: 40, height: 40, objectFit: 'contain' }} />
+        <Typography variant="h6" sx={{ ml: 2, fontWeight: 'bold', color: 'primary.main', display: 'flex', alignItems: 'center' }}>
+          Nexus
         </Typography>
       </Toolbar>
       <Divider />
@@ -178,7 +178,7 @@ export default function Layout() {
       <Divider />
       <Box sx={{ p: 2 }}>
         <Typography variant="caption" color="text.secondary">
-          v1.0.0 &copy; 2026 Office ERP Pro
+          v1.0.0 &copy; 2026 Nexus
         </Typography>
       </Box>
     </Box>
