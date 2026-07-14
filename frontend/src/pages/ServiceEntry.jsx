@@ -200,7 +200,7 @@ export default function ServiceEntry() {
         </Grid>
       </Paper>
       
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 3, mb: 4, position: 'sticky', bottom: 16, zIndex: 10 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, position: 'fixed', bottom: 24, right: 24, zIndex: 1000, bgcolor: 'rgba(255, 255, 255, 0.9)', backdropFilter: 'blur(10px)', p: 2, borderRadius: 2, boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)', border: '1px solid rgba(0,0,0,0.05)' }}>
         <Button variant="contained" color="inherit" startIcon={<ClearIcon />} sx={{ bgcolor: 'white', color: 'text.primary', '&:hover': { bgcolor: 'grey.100' } }} onClick={() => setFormData({date: dayjs(), type: 'SERVICE', status: 'PENDING', paymentMode: 'CASH'})}>
           Clear
         </Button>
