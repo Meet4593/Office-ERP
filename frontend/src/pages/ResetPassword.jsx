@@ -75,7 +75,10 @@ const ResetPassword = () => {
           
           {status.msg && <Alert severity={status.type} sx={{ width: '100%', mb: 2 }}>{status.msg}</Alert>}
 
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
+          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }} autoComplete="off">
+            {/* Hidden fields to trick browser autofill */}
+            <input type="text" style={{ display: 'none' }} />
+            <input type="password" style={{ display: 'none' }} />
             <TextField
               margin="normal"
               required
@@ -87,27 +90,30 @@ const ResetPassword = () => {
               value={securityAnswer}
               onChange={(e) => setSecurityAnswer(e.target.value)}
               disabled={loading || !email || !securityQuestion}
+              autoComplete="off"
+              inputProps={{ autoComplete: 'off' }}
             />
             <TextField
               margin="normal"
               required
               fullWidth
-              name="password"
+              name="newPassword"
               label="New Password"
               type="password"
-              id="password"
+              id="newPassword"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading || !email || !securityQuestion}
+              autoComplete="new-password"
             />
             <TextField
               margin="normal"
               required
               fullWidth
-              name="confirmPassword"
+              name="confirmNewPassword"
               label="Confirm New Password"
               type="password"
-              id="confirmPassword"
+              id="confirmNewPassword"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               disabled={loading || !email || !securityQuestion}
