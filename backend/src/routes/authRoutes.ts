@@ -1,9 +1,11 @@
 import { Router } from 'express';
-import { login, register } from '../controllers/authController';
+import { login, register, changePassword } from '../controllers/authController';
+import { authenticateToken } from '../middlewares/authMiddleware';
 
 const router = Router();
 
 router.post('/login', login);
 router.post('/register', register);
+router.post('/change-password', authenticateToken, changePassword);
 
 export default router;

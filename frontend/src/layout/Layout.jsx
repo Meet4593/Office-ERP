@@ -21,6 +21,8 @@ import {
   DialogContent,
   DialogActions,
   Button,
+  TextField,
+  Alert
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -34,7 +36,9 @@ import {
   Person as PersonIcon,
   Email as EmailIcon,
   Badge as BadgeIcon,
+  LockReset as LockResetIcon,
 } from '@mui/icons-material';
+import { changePassword } from '../services/api';
 
 const drawerWidth = 260;
 
@@ -52,6 +56,9 @@ export default function Layout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [passForm, setPassForm] = useState({ current: '', newPass: '' });
+  const [passMsg, setPassMsg] = useState({ type: '', text: '' });
   const [user, setUser] = useState(null);
   
   const navigate = useNavigate();
@@ -90,6 +97,27 @@ export default function Layout() {
 
   const handleCloseProfile = () => {
     setProfileOpen(false);
+  };
+
+  const handleOpenPassword = () => setPasswordOpen(true);
+  const handleClosePassword = () => {
+    setPasswordOpen(false);
+    setPassForm({ current: '', newPass: '' });
+    setPassMsg({ type: '', text: '' });
+  };
+  
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setPassMsg({ type: '', text: '' });
+      await changePassword(passForm.current, passForm.newPass);
+      setPassMsg({ type: 'success', text: 'Password updated successfully!' });
+      setTimeout(() => {
+        handleClosePassword();
+      }, 1500);
+    } catch (err) {
+      setPassMsg({ type: 'error', text: err.response?.data?.message || 'Update failed' });
+    }
   };
 
   const getInitial = () => {
@@ -291,11 +319,51 @@ export default function Layout() {
             </Box>
           </Box>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3, pt: 1, justifyContent: 'center' }}>
+        <DialogActions sx={{ px: 3, pb: 3, pt: 1, justifyContent: 'space-between', gap: 1 }}>
+          <Button onClick={handleOpenPassword} variant="contained" color="secondary" startIcon={<LockResetIcon />} fullWidth>
+            Change Password
+          </Button>
           <Button onClick={handleCloseProfile} variant="outlined" fullWidth>
             Close
           </Button>
         </DialogActions>
+      </Dialog>
+
+      {/* Change Password Dialog */}
+      <Dialog open={passwordOpen} onClose={handleClosePassword} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold' }}>Change Password</DialogTitle>
+        <Box component="form" onSubmit={handlePasswordSubmit}>
+          <DialogContent>
+            {passMsg.text && (
+              <Alert severity={passMsg.type} sx={{ mb: 2 }}>
+                {passMsg.text}
+              </Alert>
+            )}
+            <TextField
+              fullWidth
+              margin="dense"
+              label="Current Password"
+              type="password"
+              required
+              value={passForm.current}
+              onChange={(e) => setPassForm({ ...passForm, current: e.target.value })}
+            />
+            <TextField
+              fullWidth
+              margin="dense"
+              label="New Password"
+              type="password"
+              required
+              sx={{ mt: 2 }}
+              value={passForm.newPass}
+              onChange={(e) => setPassForm({ ...passForm, newPass: e.target.value })}
+            />
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 3 }}>
+            <Button onClick={handleClosePassword} color="inherit">Cancel</Button>
+            <Button type="submit" variant="contained" color="primary">Update Password</Button>
+          </DialogActions>
+        </Box>
       </Dialog>
     </Box>
   );
