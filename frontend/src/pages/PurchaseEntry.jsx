@@ -223,15 +223,15 @@ export default function PurchaseEntry() {
         </Grid>
       </Paper>
       
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, position: 'fixed', bottom: 24, right: 24, zIndex: 1000, bgcolor: 'rgba(255, 255, 255, 0.9)', backdropFilter: 'blur(10px)', p: 2, borderRadius: 2, boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)', border: '1px solid rgba(0,0,0,0.05)' }}>
+      <Box sx={{ display: 'flex', gap: 2, mt: 3, mb: 4 }}>
+        <Button variant="contained" color="primary" size="large" startIcon={<SaveIcon />} onClick={handleSave} sx={{ px: 4 }}>
+          Save Entry
+        </Button>
         <Button variant="contained" color="inherit" startIcon={<ClearIcon />} sx={{ bgcolor: 'white', color: 'text.primary', '&:hover': { bgcolor: 'grey.100' } }} onClick={() => setFormData({date: dayjs(), type: 'PURCHASE', status: 'PENDING', paymentMode: 'CASH'})}>
           Clear
         </Button>
         <Button variant="contained" color="info" startIcon={<PrintIcon />} onClick={handlePrint}>
           Print
-        </Button>
-        <Button variant="contained" color="primary" size="large" startIcon={<SaveIcon />} onClick={handleSave} sx={{ px: 4 }}>
-          Save Entry
         </Button>
       </Box>
     </Box>
