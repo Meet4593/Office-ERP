@@ -69,9 +69,9 @@ export default function Signup({ onLogin }) {
               required
               fullWidth
               id="email"
-              label="Email Address"
+              label="Username"
               name="email"
-              type="email"
+              type="text"
               value={formData.email}
               onChange={handleChange}
             />

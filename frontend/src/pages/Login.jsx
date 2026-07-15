@@ -57,9 +57,9 @@ export default function Login({ onLogin }) {
               required
               fullWidth
               id="email"
-              label="Email Address"
+              label="Username"
               name="email"
-              type="email"
+              type="text"
               autoComplete="email"
               autoFocus
               value={formData.email}

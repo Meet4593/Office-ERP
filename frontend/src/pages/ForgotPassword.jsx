@@ -52,9 +52,9 @@ const ForgotPassword = () => {
               required
               fullWidth
               id="email"
-              label="Email Address"
+              label="Username"
               name="email"
-              autoComplete="email"
+              type="text"
               autoFocus
               value={email}
               onChange={(e) => setEmail(e.target.value)}

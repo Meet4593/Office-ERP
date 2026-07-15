@@ -99,7 +99,7 @@ export default function UserManagement() {
           <TableHead>
             <TableRow sx={{ bgcolor: 'primary.main' }}>
               <TableCell sx={{ color: 'white' }}>Name</TableCell>
-              <TableCell sx={{ color: 'white' }}>Email</TableCell>
+              <TableCell sx={{ color: 'white' }}>Username</TableCell>
               <TableCell sx={{ color: 'white' }}>Role</TableCell>
               <TableCell sx={{ color: 'white' }}>Department</TableCell>
               <TableCell sx={{ color: 'white' }}>Permissions</TableCell>
@@ -135,7 +135,7 @@ export default function UserManagement() {
             {!formData.id && (
               <>
                 <TextField label="Name" fullWidth value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
-                <TextField label="Email" type="email" fullWidth value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+                <TextField label="Username" type="text" fullWidth value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
                 <TextField label="Password" type="password" fullWidth value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} />
               </>
             )}
