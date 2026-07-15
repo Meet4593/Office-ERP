@@ -40,7 +40,7 @@ export default function PurchaseEntry() {
   const userRole = user.role;
   const userDept = user.department;
   const userPerms = user.permissions || [];
-  const canSave = userRole === 'ADMIN' || userPerms.includes(id ? 'EDIT' : 'ADD');
+  const canSave = userRole === 'ADMIN' || !id; // Employees can only save NEW entries (!id)
 
   useEffect(() => {
     if (userRole !== 'ADMIN' && userDept && !id) {

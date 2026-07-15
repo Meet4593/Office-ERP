@@ -33,7 +33,7 @@ export default function SalesEntry() {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const userRole = user.role;
   const userPerms = user.permissions || [];
-  const canSave = userRole === 'ADMIN' || userPerms.includes(id ? 'EDIT' : 'ADD');
+  const canSave = userRole === 'ADMIN' || !id; // Employees can only save NEW entries (!id)
 
   useEffect(() => {
     if (id) {
