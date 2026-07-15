@@ -41,6 +41,7 @@ import {
   Badge as BadgeIcon,
   LockReset as LockResetIcon,
   Logout as LogoutIcon,
+  ReceiptLong as ReceiptLongIcon,
 } from '@mui/icons-material';
 import { changePassword, updateSecurityQuestion } from '../services/api';
 
@@ -54,6 +55,7 @@ const baseMenuItems = [
   { text: 'Services', icon: <BuildIcon />, path: '/services' },
   { text: 'Journal', icon: <BookIcon />, path: '/journal' },
   { text: 'Cash & Bank', icon: <AccountBalanceIcon />, path: '/vouchers' },
+  { text: 'Party Ledger', icon: <ReceiptLongIcon />, path: '/party-ledger' },
   { text: 'Master Data', icon: <SettingsIcon />, path: '/master' },
 ];
 

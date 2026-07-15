@@ -16,6 +16,7 @@ import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import UserManagement from './pages/UserManagement';
+import PartyLedger from './pages/PartyLedger';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -85,6 +86,7 @@ function App() {
             <Route path="master" element={<MasterData />} />
             
             <Route path="users" element={<UserManagement />} />
+            <Route path="party-ledger" element={<PartyLedger />} />
           </Route>
         </Routes>
       </Router>
