@@ -30,6 +30,11 @@ export default function JournalEntry() {
   
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
 
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const userRole = user.role;
+  const userPerms = user.permissions || [];
+  const canSave = userRole === 'ADMIN' || userPerms.includes(id ? 'EDIT' : 'ADD');
+
   useEffect(() => {
     if (id) {
       getJournalById(id).then(res => {
@@ -287,7 +292,7 @@ export default function JournalEntry() {
       </Paper>
       
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 3, mb: 4 }}>
-        <Button variant="contained" color="primary" size="large" startIcon={<SaveIcon />} onClick={handleSave} sx={{ px: 4 }}>
+        <Button variant="contained" color="primary" size="large" startIcon={<SaveIcon />} onClick={handleSave} sx={{ px: 4 }} disabled={!canSave}>
           {id ? 'Update Entry' : 'Save Entry'}
         </Button>
         <Button variant="contained" color="inherit" startIcon={<ClearIcon />} sx={{ bgcolor: 'white', color: 'text.primary', '&:hover': { bgcolor: 'grey.100' } }} onClick={handleClear}>

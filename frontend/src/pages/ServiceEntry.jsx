@@ -30,6 +30,18 @@ export default function ServiceEntry() {
   
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
 
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const userRole = user.role;
+  const userDept = user.department;
+  const userPerms = user.permissions || [];
+  const canSave = userRole === 'ADMIN' || userPerms.includes(id ? 'EDIT' : 'ADD');
+
+  useEffect(() => {
+    if (userRole !== 'ADMIN' && userDept && !id) {
+      setFormData(prev => ({ ...prev, department: userDept }));
+    }
+  }, [userRole, userDept, id]);
+
   useEffect(() => {
     if (id) {
       getTransactionById(id).then(res => {
@@ -140,7 +152,14 @@ export default function ServiceEntry() {
             <TextField fullWidth label="Detail No." value={formData.detailNumber || ''} onChange={handleChange('detailNumber')} size="small" />
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
-            <TextField fullWidth label="Department" value={formData.department || ''} onChange={handleChange('department')} size="small" />
+            <TextField 
+              fullWidth 
+              label="Department" 
+              value={formData.department || ''} 
+              onChange={handleChange('department')} 
+              size="small" 
+              disabled={userRole !== 'ADMIN' && !!userDept}
+            />
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
             <TextField fullWidth label="Service Person" value={formData.servicePerson || ''} onChange={handleChange('servicePerson')} size="small" />
@@ -201,7 +220,7 @@ export default function ServiceEntry() {
       </Paper>
       
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 3, mb: 4 }}>
-        <Button variant="contained" color="primary" size="large" startIcon={<SaveIcon />} onClick={handleSave} sx={{ px: 4 }}>
+        <Button variant="contained" color="secondary" size="large" startIcon={<SaveIcon />} onClick={handleSave} sx={{ px: 4 }} disabled={!canSave}>
           Save Service
         </Button>
         <Button variant="contained" color="info" startIcon={<PrintIcon />} onClick={handlePrint}>

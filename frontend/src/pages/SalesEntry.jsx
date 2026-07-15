@@ -30,6 +30,11 @@ export default function SalesEntry() {
   
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
 
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const userRole = user.role;
+  const userPerms = user.permissions || [];
+  const canSave = userRole === 'ADMIN' || userPerms.includes(id ? 'EDIT' : 'ADD');
+
   useEffect(() => {
     if (id) {
       getTransactionById(id).then(res => {
@@ -198,7 +203,7 @@ export default function SalesEntry() {
       </Paper>
       
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 3, mb: 4 }}>
-        <Button variant="contained" color="secondary" size="large" startIcon={<SaveIcon />} onClick={handleSave} sx={{ px: 4 }}>
+        <Button variant="contained" color="secondary" size="large" startIcon={<SaveIcon />} onClick={handleSave} sx={{ px: 4 }} disabled={!canSave}>
           Save Sale
         </Button>
         <Button variant="contained" color="info" startIcon={<PrintIcon />} onClick={handlePrint}>

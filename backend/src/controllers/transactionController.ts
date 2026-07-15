@@ -41,14 +41,14 @@ export const createTransaction = async (req: AuthRequest, res: Response) => {
     const userRole = req.user?.role;
     const userDept = req.user?.department;
 
-    const {
+    let {
       date, transactionNumber, supplierInvoiceNum, partAccountName,
       type, item, detailNumber, department, machineNumber, servicePerson,
       description, unit, rate, paidDate, paymentMode, status, remarks
     } = req.body;
 
-    if (userRole !== 'ADMIN' && userDept && department !== userDept) {
-      return res.status(403).json({ message: 'You can only create transactions for your assigned department' });
+    if (userRole !== 'ADMIN' && userDept) {
+      department = userDept; // Force department to employee's assigned department
     }
 
     const attachmentUrl = req.file ? `/uploads/${req.file.filename}` : null;
@@ -156,11 +156,15 @@ export const updateTransaction = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ message: 'Cannot edit transactions outside your department' });
     }
 
-    const {
+    let {
       date, transactionNumber, supplierInvoiceNum, partAccountName,
       type, item, detailNumber, department, machineNumber, servicePerson,
       description, unit, rate, paidDate, paymentMode, status, remarks, paidAmount
     } = req.body;
+
+    if (userRole !== 'ADMIN' && userDept) {
+      department = userDept;
+    }
 
     const attachmentUrl = req.file ? `/uploads/${req.file.filename}` : undefined;
 
