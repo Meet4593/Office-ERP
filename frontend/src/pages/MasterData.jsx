@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Box, Typography, Paper, Tabs, Tab, Button, Dialog, DialogTitle, 
-  DialogContent, DialogActions, TextField, IconButton, Alert, Snackbar, Tooltip, Divider
+  DialogContent, DialogActions, TextField, IconButton, Alert, Snackbar, Tooltip, Divider, MenuItem
 } from '@mui/material';
 import { DataGrid, GridToolbar, GridActionsCellItem } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
@@ -13,7 +13,7 @@ const tabsConfig = [
   { label: 'Items', endpoint: 'items', fields: [{ name: 'name', label: 'Item Name' }, { name: 'description', label: 'Description' }] },
   { label: 'Suppliers', endpoint: 'suppliers', fields: [{ name: 'name', label: 'Supplier Name' }, { name: 'contact', label: 'Contact' }, { name: 'email', label: 'Email' }, { name: 'address', label: 'Address' }] },
   { label: 'Customers', endpoint: 'customers', fields: [{ name: 'name', label: 'Customer Name' }, { name: 'contact', label: 'Contact' }, { name: 'email', label: 'Email' }, { name: 'address', label: 'Address' }] },
-  { label: 'Machines', endpoint: 'machines', fields: [{ name: 'machineNum', label: 'Machine Number' }, { name: 'name', label: 'Machine Name' }, { name: 'department', label: 'Department' }] },
+  { label: 'Machines', endpoint: 'machines', fields: [{ name: 'machineNum', label: 'Machine Number' }, { name: 'name', label: 'Machine Name' }, { name: 'department', label: 'Department', type: 'select', source: 'departments' }] },
   { label: 'Units', endpoint: 'units', fields: [{ name: 'name', label: 'Unit Name (e.g. kg, pcs)' }] },
   { label: 'Payment Modes', endpoint: 'paymentModes', fields: [{ name: 'name', label: 'Payment Mode (e.g. CASH, BANK)' }] }
 ];
@@ -129,12 +129,17 @@ export default function MasterData() {
 
   const columns = [
     { field: 'id', headerName: 'ID', width: 70 },
-    ...activeTab.fields.map(f => ({
-      field: f.name,
-      headerName: f.label,
-      flex: 1,
-      editable: true
-    })),
+    ...activeTab.fields.map(f => {
+      const isSelect = f.type === 'select';
+      return {
+        field: f.name,
+        headerName: f.label,
+        flex: 1,
+        editable: true,
+        type: isSelect ? 'singleSelect' : 'string',
+        valueOptions: isSelect && data[f.source] ? data[f.source].map(d => d.name) : undefined
+      };
+    }),
     {
       field: 'actions',
       type: 'actions',
@@ -219,11 +224,20 @@ export default function MasterData() {
                       key={f.name}
                       label={f.label}
                       required={f === activeTab.fields[0]}
+                      select={f.type === 'select'}
                       value={row[f.name]}
                       onChange={(e) => handleRowChange(row._id, f.name, e.target.value)}
                       sx={{ flex: '1 1 180px' }}
                       size="small"
-                    />
+                    >
+                      {f.type === 'select' && data[f.source] ? (
+                        data[f.source].map(opt => (
+                          <MenuItem key={opt.id} value={opt.name}>
+                            {opt.name}
+                          </MenuItem>
+                        ))
+                      ) : null}
+                    </TextField>
                   ))}
                 </Box>
               </Box>
