@@ -12,9 +12,12 @@ export const createTransaction = async (req: AuthRequest, res: Response) => {
 
     const attachmentUrl = req.file ? `/uploads/${req.file.filename}` : null;
     
-    // Auto-generate SR Number (e.g. SR-20260702-001)
-    const srCount = await prisma.transaction.count();
-    const srNumber = `SR-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(srCount + 1).padStart(4, '0')}`;
+    // Auto-generate SR Number robustly using the last inserted ID so deletions don't cause duplicates
+    const lastTransaction = await prisma.transaction.findFirst({
+      orderBy: { id: 'desc' }
+    });
+    const nextId = lastTransaction ? lastTransaction.id + 1 : 1;
+    const srNumber = `SR-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(nextId).padStart(4, '0')}`;
 
     const transaction = await prisma.transaction.create({
       data: {
