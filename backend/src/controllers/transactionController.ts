@@ -42,9 +42,9 @@ export const createTransaction = async (req: AuthRequest, res: Response) => {
     });
 
     res.status(201).json(transaction);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error creating transaction' });
+  } catch (error: any) {
+    console.error('Error in createTransaction:', error);
+    res.status(500).json({ message: error.message || 'Error creating transaction' });
   }
 };
 

@@ -80,9 +80,13 @@ export default function PurchaseEntry() {
       const data = new FormData();
       Object.keys(formData).forEach(key => {
         if (key === 'date' && formData[key]) {
-          data.append(key, formData[key].toISOString());
+          if (formData[key].isValid && formData[key].isValid()) {
+            data.append(key, formData[key].toISOString());
+          }
         } else if (key === 'paidDate' && formData[key]) {
-          data.append(key, formData[key].toISOString());
+          if (formData[key].isValid && formData[key].isValid()) {
+            data.append(key, formData[key].toISOString());
+          }
         } else if (formData[key] !== null && formData[key] !== undefined) {
           data.append(key, formData[key]);
         }
