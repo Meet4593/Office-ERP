@@ -155,6 +155,7 @@ export default function PurchaseEntry() {
               freeSolo
               forcePopupIcon={true}
               options={partyOptions?.map(o => o.name) || []}
+              sx={{ minWidth: 200 }}
               value={formData.partAccountName || ''}
               onChange={(e, newValue) => setFormData({ ...formData, partAccountName: newValue || '' })}
               onInputChange={(e, newInputValue) => setFormData({ ...formData, partAccountName: newInputValue || '' })}
@@ -192,6 +193,7 @@ export default function PurchaseEntry() {
               freeSolo
               forcePopupIcon={true}
               options={masterData.departments?.map(o => o.name) || []}
+              sx={{ minWidth: 200 }}
               value={formData.department || ''}
               onChange={(e, newValue) => setFormData({ ...formData, department: newValue || '' })}
               onInputChange={(e, newInputValue) => setFormData({ ...formData, department: newInputValue || '' })}
@@ -237,6 +239,7 @@ export default function PurchaseEntry() {
               freeSolo
               forcePopupIcon={true}
               options={masterData.items?.map(o => o.name) || []}
+              sx={{ minWidth: 200 }}
               value={formData.item || ''}
               onChange={(e, newValue) => setFormData({ ...formData, item: newValue || '' })}
               onInputChange={(e, newInputValue) => setFormData({ ...formData, item: newInputValue || '' })}
@@ -277,6 +280,7 @@ export default function PurchaseEntry() {
               freeSolo
               forcePopupIcon={true}
               options={(masterData.machines || []).filter(m => !formData.department || m.department === formData.department).map(o => `${o.machineNum} ${o.name ? `(${o.name})` : ''}`.trim())}
+              sx={{ minWidth: 200 }}
               value={formData.machineNumber || ''}
               onChange={(e, newValue) => setFormData({ ...formData, machineNumber: newValue || '' })}
               onInputChange={(e, newInputValue) => setFormData({ ...formData, machineNumber: newInputValue || '' })}
