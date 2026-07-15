@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { 
   Box, Typography, Paper, Tabs, Tab, Button, Dialog, DialogTitle, 
   DialogContent, DialogActions, TextField, IconButton, Alert, Snackbar, Tooltip, Divider, MenuItem
@@ -28,6 +29,7 @@ const createEmptyRow = (fields) => {
 };
 
 export default function MasterData() {
+  const location = useLocation();
   const [tabIndex, setTabIndex] = useState(0);
   const [data, setData] = useState({});
   const [loading, setLoading] = useState(true);
@@ -54,6 +56,19 @@ export default function MasterData() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (location.state?.openDialog && location.state?.tab) {
+      const tabIdx = tabsConfig.findIndex(t => t.endpoint === location.state.tab);
+      if (tabIdx !== -1) {
+        setTabIndex(tabIdx);
+        setBulkRows([{ _id: Date.now(), ...tabsConfig[tabIdx].fields.reduce((acc, f) => ({ ...acc, [f.name]: '' }), {}) }]);
+        setOpenDialog(true);
+      }
+      // Clear state so it doesn't reopen on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const activeTab = tabsConfig[tabIndex];
   const rows = data[activeTab.endpoint] || [];
