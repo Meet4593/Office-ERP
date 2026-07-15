@@ -66,8 +66,12 @@ export default function Dashboard() {
         ]);
         setStats(statsRes.data);
         
-        // Take the top 7 most recent transactions for the table
-        setRecentTransactions(transRes.data.slice(0, 7));
+        // Take the top 7 most recent transactions for the table, adding the calculated amount
+        const formattedRecent = transRes.data.slice(0, 7).map(t => ({
+          ...t,
+          amount: (parseFloat(t.unit || 0) * parseFloat(t.rate || 0)) || t.rate || 0
+        }));
+        setRecentTransactions(formattedRecent);
 
         // Format data for Recharts (last 10 transactions)
         const formattedChartData = transRes.data.slice(0, 10).reverse().map(t => {
