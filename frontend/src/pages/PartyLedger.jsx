@@ -132,6 +132,7 @@ export default function PartyLedger() {
               options={partyOptions}
               value={selectedParty}
               onInputChange={(e, newValue) => setSelectedParty(newValue)}
+              sx={{ minWidth: 200 }}
               renderInput={(params) => <TextField {...params} label="Party Name" fullWidth />}
             />
           </Grid>
