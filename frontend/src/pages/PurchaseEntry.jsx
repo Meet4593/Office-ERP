@@ -55,6 +55,10 @@ export default function PurchaseEntry() {
 
   const partyOptions = formData.type === 'SALE' ? masterData.customers : masterData.suppliers;
 
+  const handleAddNewMasterData = (tab) => {
+    navigate('/master-data', { state: { openDialog: true, tab } });
+  };
+
   const handleChange = (field) => (e) => {
     setFormData({ ...formData, [field]: e.target.value });
   };
@@ -173,7 +177,7 @@ export default function PurchaseEntry() {
                             <AddIcon fontSize="small" color="primary" />
                           </IconButton>
                         </Tooltip>
-                        {params.InputProps.endAdornment}
+                        {params.InputProps?.endAdornment}
                       </React.Fragment>
                     ),
                   }}
@@ -210,7 +214,7 @@ export default function PurchaseEntry() {
                             <AddIcon fontSize="small" color="primary" />
                           </IconButton>
                         </Tooltip>
-                        {params.InputProps.endAdornment}
+                        {params.InputProps?.endAdornment}
                       </React.Fragment>
                     ),
                   }}
@@ -255,7 +259,7 @@ export default function PurchaseEntry() {
                             <AddIcon fontSize="small" color="primary" />
                           </IconButton>
                         </Tooltip>
-                        {params.InputProps.endAdornment}
+                        {params.InputProps?.endAdornment}
                       </React.Fragment>
                     ),
                   }}
@@ -295,7 +299,7 @@ export default function PurchaseEntry() {
                             <AddIcon fontSize="small" color="primary" />
                           </IconButton>
                         </Tooltip>
-                        {params.InputProps.endAdornment}
+                        {params.InputProps?.endAdornment}
                       </React.Fragment>
                     ),
                   }}
