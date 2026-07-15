@@ -17,6 +17,10 @@ export default function VoucherList() {
   const location = useLocation();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const userRole = user.role;
+  const userPerms = user.permissions || [];
+  const canEdit = userRole === 'ADMIN' || userPerms.includes('EDIT');
+  const canDelete = userRole === 'ADMIN' || userPerms.includes('DELETE');
+  const canAdd = userRole === 'ADMIN' || userPerms.includes('ADD');
   const [rows, setRows] = useState([]);
   const [partyOptions, setPartyOptions] = useState([]);
   
@@ -185,15 +189,15 @@ export default function VoucherList() {
 
   const ActionButtons = ({ id }) => (
     <Box sx={{ display: 'inline-flex', opacity: 0.6, '&:hover': { opacity: 1 }, ml: 1 }}>
-      {userRole === 'ADMIN' && (
-        <>
-          <IconButton size="small" onClick={() => navigate(`/vouchers/edit/${id}`)} sx={{ p: 0.5 }}>
-            <EditIcon sx={{ fontSize: 14 }} color="primary" />
-          </IconButton>
-          <IconButton size="small" onClick={() => openDeleteDialog(id)} sx={{ p: 0.5 }}>
-            <DeleteIcon sx={{ fontSize: 14 }} color="error" />
-          </IconButton>
-        </>
+      {canEdit && (
+        <IconButton size="small" onClick={() => navigate(`/vouchers/edit/${id}`)} sx={{ p: 0.5 }}>
+          <EditIcon sx={{ fontSize: 14 }} color="primary" />
+        </IconButton>
+      )}
+      {canDelete && (
+        <IconButton size="small" onClick={() => openDeleteDialog(id)} sx={{ p: 0.5 }}>
+          <DeleteIcon sx={{ fontSize: 14 }} color="error" />
+        </IconButton>
       )}
     </Box>
   );
@@ -326,7 +330,7 @@ export default function VoucherList() {
       </Box>
 
       {/* Quick Entry Form */}
-      {userRole === 'ADMIN' && (
+      {canAdd && (
         <Paper sx={{ p: 2, mb: 3, border: '1px solid #ccc' }}>
           <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, color: 'primary.main' }}>
             Quick Entry

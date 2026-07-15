@@ -14,6 +14,11 @@ export default function JournalList() {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const userRole = user.role;
+  const userPerms = user.permissions || [];
+  const canEdit = userRole === 'ADMIN' || userPerms.includes('EDIT');
+  const canDelete = userRole === 'ADMIN' || userPerms.includes('DELETE');
+  const canAdd = userRole === 'ADMIN' || userPerms.includes('ADD');
+  
   const [rows, setRows] = useState([]);
   
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -89,7 +94,7 @@ export default function JournalList() {
       width: 120,
       renderCell: (params) => (
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', height: '100%' }}>
-          {userRole === 'ADMIN' && (
+          {canEdit && (
             <IconButton 
               size="small" 
               color="primary"
@@ -101,7 +106,7 @@ export default function JournalList() {
               <EditIcon fontSize="small" />
             </IconButton>
           )}
-          {userRole === 'ADMIN' && (
+          {canDelete && (
             <IconButton 
               size="small" 
               color="error"
@@ -173,7 +178,7 @@ export default function JournalList() {
           >
             Export to Excel
           </Button>
-          {userRole === 'ADMIN' && (
+          {canAdd && (
             <Button 
               variant="contained" 
               color="primary" 
