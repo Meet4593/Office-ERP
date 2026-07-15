@@ -235,13 +235,13 @@ export default function VoucherList() {
       if (row.isSeparator) {
         sheet.addRow([]);
       } else {
-        const recDate = row.receipt?.date ? dayjs(row.receipt.date).format('DD-MM-YYYY') : '';
+        const recDate = row.receipt?.date ? dayjs(row.receipt.date).format('DD/MM/YYYY') : '';
         const recName = row.receipt?.partyAccountName || '';
         const recDesc = row.receipt?.description || '';
         const recMonth = row.receipt?.month || '';
         const recAmt = row.receipt?.amount || '';
         
-        const payDate = row.payment?.date ? dayjs(row.payment.date).format('DD-MM-YYYY') : '';
+        const payDate = row.payment?.date ? dayjs(row.payment.date).format('DD/MM/YYYY') : '';
         const payName = row.payment?.partyAccountName || '';
         const payDesc = row.payment?.description || '';
         const payMonth = row.payment?.month || '';
@@ -310,7 +310,7 @@ export default function VoucherList() {
           Cash & Bank Book
         </Typography>
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-          <DatePicker
+          <DatePicker format="DD/MM/YYYY"
             views={['year', 'month']}
             label="Filter by Month"
             value={monthFilter}
@@ -367,7 +367,7 @@ export default function VoucherList() {
               </TextField>
             </Grid>
             <Grid item xs={12} sm={3}>
-              <DatePicker
+              <DatePicker format="DD/MM/YYYY"
                 label="Date"
                 value={formData.date}
                 onChange={handleDateChange}
@@ -502,7 +502,7 @@ export default function VoucherList() {
                 <TableRow key={index} sx={{ '& td': { border: '1px solid #555' } }}>
                   {/* DEBIT / RECEIPT SIDE */}
                   <TableCell sx={{ bgcolor: 'white' }}>
-                    {row.receipt?.date ? dayjs(row.receipt.date).format('DD-MM-YY') : ''}
+                    {row.receipt?.date ? dayjs(row.receipt.date).format('DD/MM/YYYY') : ''}
                   </TableCell>
                   <TableCell sx={{ bgcolor: 'white' }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -522,7 +522,7 @@ export default function VoucherList() {
 
                   {/* CREDIT / PAYMENT SIDE */}
                   <TableCell sx={{ bgcolor: 'white' }}>
-                    {row.payment?.date ? dayjs(row.payment.date).format('DD-MM-YY') : ''}
+                    {row.payment?.date ? dayjs(row.payment.date).format('DD/MM/YYYY') : ''}
                   </TableCell>
                   <TableCell sx={{ bgcolor: 'white' }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

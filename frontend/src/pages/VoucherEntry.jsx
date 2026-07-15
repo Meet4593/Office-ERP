@@ -117,7 +117,7 @@ export default function VoucherEntry() {
             <Typography variant="body2">No. {formData.srNumber || 'AUTO'}</Typography>
           </Box>
           <Box sx={{ flexGrow: 1 }} />
-          <Typography variant="body2">Date: {formData.date ? formData.date.format('DD-MMM-YYYY') : ''}</Typography>
+          <Typography variant="body2">Date: {formData.date ? formData.date.format('DD/MM/YYYY') : ''}</Typography>
         </Box>
 
         <Box sx={{ p: 4 }}>
@@ -137,7 +137,7 @@ export default function VoucherEntry() {
               </TextField>
             </Grid>
             <Grid item xs={12} sm={4}>
-              <DatePicker
+              <DatePicker format="DD/MM/YYYY"
                 label="Date"
                 value={formData.date}
                 onChange={handleDateChange}

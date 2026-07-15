@@ -77,7 +77,7 @@ export default function Dashboard() {
         const formattedChartData = transRes.data.slice(0, 10).reverse().map(t => {
           const amount = (parseFloat(t.unit || 0) * parseFloat(t.rate || 0)) || t.rate || 0;
           return {
-            name: dayjs(t.date).format('DD MMM'),
+            name: dayjs(t.date).format('DD/MM/YYYY'),
             sales: t.type === 'SALE' ? amount : 0,
             purchases: t.type === 'PURCHASE' ? amount : 0,
           };
@@ -206,7 +206,7 @@ export default function Dashboard() {
                 {recentTransactions.map((row) => (
                   <TableRow key={row.id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 }, transition: 'background 0.2s' }}>
                     <TableCell sx={{ color: '#475569' }}>
-                      {dayjs(row.date).format('DD MMM, YYYY')}
+                      {dayjs(row.date).format('DD/MM/YYYY')}
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2" fontWeight="bold" sx={{ color: row.type === 'SALES' ? '#10b981' : '#3b82f6' }}>

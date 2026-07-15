@@ -180,7 +180,7 @@ export default function JournalEntry() {
             />
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
-            <DatePicker
+            <DatePicker format="DD/MM/YYYY"
               label="Date"
               value={formData.date}
               onChange={handleDateChange}

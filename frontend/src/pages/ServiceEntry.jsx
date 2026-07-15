@@ -121,7 +121,7 @@ export default function ServiceEntry() {
             <TextField fullWidth label="SR Number" disabled value={formData.srNumber || 'AUTO-GEN'} size="small" />
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
-            <DatePicker 
+            <DatePicker format="DD/MM/YYYY" 
               label="Service Date" 
               value={formData.date}
               onChange={handleDateChange('date')}
@@ -182,7 +182,7 @@ export default function ServiceEntry() {
         </Typography>
         <Grid container spacing={3} alignItems="center">
           <Grid item xs={12} sm={6} md={3}>
-            <DatePicker 
+            <DatePicker format="DD/MM/YYYY" 
               label="Paid Date" 
               value={formData.paidDate || null}
               onChange={handleDateChange('paidDate')}

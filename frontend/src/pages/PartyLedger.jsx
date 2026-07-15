@@ -82,7 +82,7 @@ export default function PartyLedger() {
     // Transactions Rows
     ledgerData.entries.forEach(entry => {
       sheet.addRow({
-        date: dayjs(entry.date).format('DD-MM-YYYY'),
+        date: dayjs(entry.date).format('DD/MM/YYYY'),
         particulars: entry.particulars,
         description: entry.description,
         debit: entry.debit || '',
@@ -150,7 +150,7 @@ export default function PartyLedger() {
             />
           </Grid>
           <Grid item xs={12} sm={3}>
-            <DatePicker
+            <DatePicker format="DD/MM/YYYY"
               label="Start Date"
               value={startDate}
               onChange={setStartDate}
@@ -158,7 +158,7 @@ export default function PartyLedger() {
             />
           </Grid>
           <Grid item xs={12} sm={3}>
-            <DatePicker
+            <DatePicker format="DD/MM/YYYY"
               label="End Date"
               value={endDate}
               onChange={setEndDate}
@@ -216,7 +216,7 @@ export default function PartyLedger() {
               ) : (
                 ledgerData.entries.map((entry, index) => (
                   <TableRow key={index} hover>
-                    <TableCell>{dayjs(entry.date).format('DD-MM-YYYY')}</TableCell>
+                    <TableCell>{dayjs(entry.date).format('DD/MM/YYYY')}</TableCell>
                     <TableCell>{entry.particulars}</TableCell>
                     <TableCell>{entry.description}</TableCell>
                     <TableCell align="right" sx={{ color: 'error.main' }}>{formatMoney(entry.debit)}</TableCell>

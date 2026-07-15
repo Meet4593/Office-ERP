@@ -78,7 +78,7 @@ export default function JournalList() {
       field: 'date', 
       headerName: 'Date', 
       width: 130, 
-      renderCell: (params) => params.value ? dayjs(params.value).format('DD-MMM-YYYY') : '' 
+      renderCell: (params) => params.value ? dayjs(params.value).format('DD/MM/YYYY') : '' 
     },
     { field: 'description', headerName: 'Narration', flex: 1, minWidth: 200 },
     { 

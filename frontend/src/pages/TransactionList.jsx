@@ -164,7 +164,7 @@ export default function TransactionList({ type, title, newRoute }) {
           <ArrowDropDownIcon sx={{ ml: 0.5 }} />
         </Box>
       ),
-      renderCell: (params) => params.value ? dayjs(params.value).format('DD-MMM-YYYY') : '' 
+      renderCell: (params) => params.value ? dayjs(params.value).format('DD/MM/YYYY') : '' 
     },
     { 
       field: 'supplierCustomer', 

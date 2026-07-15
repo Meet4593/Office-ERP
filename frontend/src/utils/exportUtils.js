@@ -21,7 +21,7 @@ export const generateInvoicePDF = (transaction) => {
   // Transaction Details
   doc.setFontSize(10);
   doc.text(`SR Number: ${transaction.srNumber || 'N/A'}`, 14, 45);
-  doc.text(`Date: ${transaction.date ? dayjs(transaction.date).format('DD-MMM-YYYY') : 'N/A'}`, 14, 52);
+  doc.text(`Date: ${transaction.date ? dayjs(transaction.date).format('DD/MM/YYYY') : 'N/A'}`, 14, 52);
   doc.text(`Status: ${transaction.status || 'N/A'}`, 14, 59);
 
   // Party Details
@@ -122,7 +122,7 @@ export const exportDetailedExcel = async (rows, type, filename = 'Detailed_Repor
     if (type === 'SERVICE') {
       sheet.addRow([
         row.srNumber || '',
-        row.date ? dayjs(row.date).format('DD-MMM-YYYY') : '',
+        row.date ? dayjs(row.date).format('DD/MM/YYYY') : '',
         row.supplierCustomer || '',
         row.machineNumber || '',
         row.department || '',
@@ -141,7 +141,7 @@ export const exportDetailedExcel = async (rows, type, filename = 'Detailed_Repor
     } else {
       sheet.addRow([
         row.srNumber || '',
-        row.date ? dayjs(row.date).format('DD-MMM-YYYY') : '',
+        row.date ? dayjs(row.date).format('DD/MM/YYYY') : '',
         row.supplierCustomer || '',
         row.supplierInvoiceNum || '',
         row.item || '',
@@ -186,7 +186,7 @@ export const exportDetailedPDF = (rows, type, filename = 'Detailed_Report.pdf') 
     head = [['SR Num', 'Date', 'Party Name', 'Machine No.', 'Department', 'Service Person', 'Detail No.', 'Item', 'Amount', 'Status']];
     body = rows.map(row => [
       row.srNumber || '-',
-      row.date ? dayjs(row.date).format('DD-MMM-YY') : '-',
+      row.date ? dayjs(row.date).format('DD/MM/YYYY') : '-',
       row.supplierCustomer || '-',
       row.machineNumber || '-',
       row.department || '-',
@@ -200,7 +200,7 @@ export const exportDetailedPDF = (rows, type, filename = 'Detailed_Report.pdf') 
     head = [['SR Num', 'Date', 'Party Name', 'Invoice', 'Item', 'Unit', 'Rate', 'Amount', 'Status']];
     body = rows.map(row => [
       row.srNumber || '-',
-      row.date ? dayjs(row.date).format('DD-MMM-YY') : '-',
+      row.date ? dayjs(row.date).format('DD/MM/YYYY') : '-',
       row.supplierCustomer || '-',
       row.supplierInvoiceNum || '-',
       row.item || '-',
