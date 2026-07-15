@@ -47,7 +47,7 @@ import { changePassword, updateSecurityQuestion } from '../services/api';
 
 const drawerWidth = 260;
 
-const menuItems = [
+const baseMenuItems = [
   { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
   { text: 'Purchase', icon: <ShoppingCartIcon />, path: '/purchase' },
   { text: 'Sales', icon: <PointOfSaleIcon />, path: '/sales' },
@@ -78,6 +78,10 @@ export default function Layout() {
       setUser(JSON.parse(storedUser));
     }
   }, []);
+
+  const menuItems = user?.role === 'ADMIN' 
+    ? [...baseMenuItems, { text: 'User Management', icon: <PersonIcon />, path: '/users' }]
+    : baseMenuItems;
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);

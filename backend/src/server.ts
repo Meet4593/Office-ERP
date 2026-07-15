@@ -7,6 +7,7 @@ import transactionRoutes from './routes/transactionRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
 import journalRoutes from './routes/journalRoutes';
 import voucherRoutes from './routes/voucherRoutes';
+import userRoutes from './routes/userRoutes';
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ app.use('/api/transactions', transactionRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/journals', journalRoutes);
 app.use('/api/vouchers', voucherRoutes);
+app.use('/api/users', userRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Backend is running smoothly' });

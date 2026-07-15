@@ -13,6 +13,8 @@ model User {
   password  String
   name      String
   role             String    @default("EMPLOYEE")
+  department       String?
+  permissions      String[]  @default(["VIEW", "ADD", "EDIT", "DELETE"])
   securityQuestion String?
   securityAnswer   String?
   resetToken       String?

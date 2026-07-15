@@ -24,6 +24,13 @@ const getStatusColor = (status) => {
 
 export default function TransactionList({ type, title, newRoute }) {
   const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const userRole = user.role;
+  const userPerms = user.permissions || [];
+  const canEdit = userRole === 'ADMIN' || userPerms.includes('EDIT');
+  const canDelete = userRole === 'ADMIN' || userPerms.includes('DELETE');
+  const canAdd = userRole === 'ADMIN' || userPerms.includes('ADD');
+
   const [rows, setRows] = useState([]);
   
   // Delete Dialog State
@@ -193,26 +200,30 @@ export default function TransactionList({ type, title, newRoute }) {
       width: 180,
       renderCell: (params) => (
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', height: '100%' }}>
-          <IconButton 
-            size="small" 
-            color="primary"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleEdit(params.row.id, params.row.type);
-            }}
-          >
-            <EditIcon fontSize="small" />
-          </IconButton>
-          <IconButton 
-            size="small" 
-            color="error"
-            onClick={(e) => {
-              e.stopPropagation();
-              openDeleteDialog(params.row.id);
-            }}
-          >
-            <DeleteIcon fontSize="small" />
-          </IconButton>
+          {canEdit && (
+            <IconButton 
+              size="small" 
+              color="primary"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEdit(params.row.id, params.row.type);
+              }}
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+          )}
+          {canDelete && (
+            <IconButton 
+              size="small" 
+              color="error"
+              onClick={(e) => {
+                e.stopPropagation();
+                openDeleteDialog(params.row.id);
+              }}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          )}
           <IconButton 
             size="small"
             color="success"
@@ -312,14 +323,16 @@ export default function TransactionList({ type, title, newRoute }) {
           >
             Export PDF Report
           </Button>
-          <Button 
-            variant="contained" 
-            color="primary" 
-            startIcon={<AddIcon />}
-            onClick={() => navigate(newRoute)}
-          >
-            New {title.replace('List', '')}
-          </Button>
+          {canAdd && (
+            <Button 
+              variant="contained"
+              color="primary" 
+              startIcon={<AddIcon />}
+              onClick={() => navigate(newRoute)}
+            >
+              New {title.replace('List', '')}
+            </Button>
+          )}
         </Box>
       </Box>
 

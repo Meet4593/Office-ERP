@@ -15,6 +15,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import UserManagement from './pages/UserManagement';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -82,6 +83,8 @@ function App() {
             <Route path="vouchers/edit/:id" element={<VoucherEntry />} />
             
             <Route path="master" element={<MasterData />} />
+            
+            <Route path="users" element={<UserManagement />} />
           </Route>
         </Routes>
       </Router>

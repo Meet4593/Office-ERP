@@ -38,11 +38,18 @@ const syncMasterData = async (data: any) => {
 
 export const createTransaction = async (req: AuthRequest, res: Response) => {
   try {
+    const userRole = req.user?.role;
+    const userDept = req.user?.department;
+
     const {
       date, transactionNumber, supplierInvoiceNum, partAccountName,
       type, item, detailNumber, department, machineNumber, servicePerson,
       description, unit, rate, paidDate, paymentMode, status, remarks
     } = req.body;
+
+    if (userRole !== 'ADMIN' && userDept && department !== userDept) {
+      return res.status(403).json({ message: 'You can only create transactions for your assigned department' });
+    }
 
     const attachmentUrl = req.file ? `/uploads/${req.file.filename}` : null;
     
@@ -88,9 +95,18 @@ export const createTransaction = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const getTransactions = async (req: Request, res: Response) => {
+export const getTransactions = async (req: AuthRequest, res: Response) => {
   try {
+    const userRole = req.user?.role;
+    const userDept = req.user?.department;
+    
+    let whereClause = {};
+    if (userRole !== 'ADMIN' && userDept) {
+      whereClause = { department: userDept };
+    }
+
     const transactions = await prisma.transaction.findMany({
+      where: whereClause,
       orderBy: { createdAt: 'desc' }
     });
     res.json(transactions);
@@ -100,13 +116,20 @@ export const getTransactions = async (req: Request, res: Response) => {
   }
 };
 
-export const getTransactionById = async (req: Request, res: Response) => {
+export const getTransactionById = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
+    const userRole = req.user?.role;
+    const userDept = req.user?.department;
+
     const transaction = await prisma.transaction.findUnique({
       where: { id: parseInt(id as string) }
     });
-    
+
+    if (transaction && userRole !== 'ADMIN' && userDept && transaction.department !== userDept) {
+      return res.status(403).json({ message: 'Access denied to this department transaction' });
+    }
+
     if (!transaction) {
       return res.status(404).json({ message: 'Transaction not found' });
     }
@@ -121,6 +144,18 @@ export const getTransactionById = async (req: Request, res: Response) => {
 export const updateTransaction = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
+    const userRole = req.user?.role;
+    const userDept = req.user?.department;
+
+    const existing = await prisma.transaction.findUnique({ where: { id: parseInt(id as string) } });
+    if (!existing) {
+      return res.status(404).json({ message: 'Transaction not found' });
+    }
+
+    if (userRole !== 'ADMIN' && userDept && existing.department !== userDept) {
+      return res.status(403).json({ message: 'Cannot edit transactions outside your department' });
+    }
+
     const {
       date, transactionNumber, supplierInvoiceNum, partAccountName,
       type, item, detailNumber, department, machineNumber, servicePerson,
@@ -167,7 +202,18 @@ export const updateTransaction = async (req: AuthRequest, res: Response) => {
 export const deleteTransaction = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
+    const userRole = req.user?.role;
+    const userDept = req.user?.department;
     const { password } = req.body;
+    
+    const existing = await prisma.transaction.findUnique({ where: { id: parseInt(id as string) } });
+    if (!existing) {
+      return res.status(404).json({ message: 'Transaction not found' });
+    }
+
+    if (userRole !== 'ADMIN' && userDept && existing.department !== userDept) {
+      return res.status(403).json({ message: 'Cannot delete transactions outside your department' });
+    }
     
     const masterPassword = process.env.DELETE_PASSWORD || 'admin123';
     

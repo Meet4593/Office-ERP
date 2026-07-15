@@ -36,6 +36,18 @@ export default function PurchaseEntry() {
   
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
 
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const userRole = user.role;
+  const userDept = user.department;
+  const userPerms = user.permissions || [];
+  const canSave = userRole === 'ADMIN' || userPerms.includes(id ? 'EDIT' : 'ADD');
+
+  useEffect(() => {
+    if (userRole !== 'ADMIN' && userDept && !id) {
+      setFormData(prev => ({ ...prev, department: userDept }));
+    }
+  }, [userRole, userDept, id]);
+
   useEffect(() => {
     getMasterData().then(res => setMasterData(res.data)).catch(console.error);
     if (id) {
@@ -197,10 +209,11 @@ export default function PurchaseEntry() {
             <Autocomplete
               fullWidth
               size="small"
-              freeSolo
+              freeSolo={userRole === 'ADMIN' || !userDept}
               autoHighlight
               autoSelect
               forcePopupIcon={true}
+              readOnly={userRole !== 'ADMIN' && !!userDept}
               options={masterData.departments?.map(o => o.name) || []}
               sx={{ minWidth: 200 }}
               value={formData.department || ''}
@@ -216,15 +229,17 @@ export default function PurchaseEntry() {
                     ...params.InputProps,
                     endAdornment: (
                       <React.Fragment>
-                        <Tooltip title="Add New Department">
-                          <IconButton 
-                            size="small" 
-                            onClick={(e) => { e.stopPropagation(); handleAddNewMasterData('departments'); }}
-                            sx={{ mr: -1 }}
-                          >
-                            <AddIcon fontSize="small" color="primary" />
-                          </IconButton>
-                        </Tooltip>
+                        {(userRole === 'ADMIN' || !userDept) && (
+                          <Tooltip title="Add New Department">
+                            <IconButton 
+                              size="small" 
+                              onClick={(e) => { e.stopPropagation(); handleAddNewMasterData('departments'); }}
+                              sx={{ mr: -1 }}
+                            >
+                              <AddIcon fontSize="small" color="primary" />
+                            </IconButton>
+                          </Tooltip>
+                        )}
                         {params.InputProps?.endAdornment}
                       </React.Fragment>
                     ),
@@ -394,7 +409,7 @@ export default function PurchaseEntry() {
       </Paper>
       
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 3, mb: 4 }}>
-        <Button variant="contained" color="primary" size="large" startIcon={<SaveIcon />} onClick={handleSave} sx={{ px: 4 }}>
+        <Button variant="contained" color="primary" size="large" startIcon={<SaveIcon />} onClick={handleSave} sx={{ px: 4 }} disabled={!canSave}>
           Save Entry
         </Button>
         <Button variant="contained" color="info" startIcon={<PrintIcon />} onClick={handlePrint}>

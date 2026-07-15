@@ -7,6 +7,8 @@ export interface AuthRequest extends Request {
   user?: {
     userId: number;
     role: string;
+    department?: string | null;
+    permissions?: string[];
   };
 }
 
@@ -22,7 +24,7 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
     if (err) {
       return res.status(403).json({ message: 'Invalid or expired token' });
     }
-    req.user = decoded as { userId: number; role: string };
+    req.user = decoded as { userId: number; role: string; department?: string | null; permissions?: string[] };
     next();
   });
 };
@@ -32,4 +34,17 @@ export const requireAdmin = (req: AuthRequest, res: Response, next: NextFunction
     return res.status(403).json({ message: 'Require Admin role' });
   }
   next();
+};
+
+export const requirePermission = (action: string) => {
+  return (req: AuthRequest, res: Response, next: NextFunction) => {
+    if (req.user?.role === 'ADMIN') {
+      return next(); // ADMIN can do anything
+    }
+    const perms = req.user?.permissions || [];
+    if (!perms.includes(action)) {
+      return res.status(403).json({ message: `Require ${action} permission` });
+    }
+    next();
+  };
 };
