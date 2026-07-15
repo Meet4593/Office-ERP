@@ -14,6 +14,9 @@ export default function useKeyboardNavigation() {
     // Crucial fix: Let MUI Autocomplete handle ArrowUp/ArrowDown for list navigation
     if (e.target.getAttribute('role') === 'combobox' && ['ArrowUp', 'ArrowDown'].includes(e.key)) return;
 
+    // Let buttons handle Enter key natively to trigger click events
+    if (e.target.tagName.toLowerCase() === 'button' && e.key === 'Enter') return;
+
 
     // Get all focusable input elements within the current form or the closest parent container
     const container = e.target.closest('form') || e.target.closest('.MuiBox-root') || document.body;

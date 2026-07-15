@@ -279,6 +279,12 @@ export default function VoucherList() {
             variant="outlined"
             value={deletePassword}
             onChange={(e) => setDeletePassword(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleDeleteConfirm();
+              }
+            }}
           />
         </DialogContent>
         <DialogActions>
