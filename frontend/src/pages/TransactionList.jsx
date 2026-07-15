@@ -224,28 +224,30 @@ export default function TransactionList({ type, title, newRoute }) {
               <DeleteIcon fontSize="small" />
             </IconButton>
           )}
-          <IconButton 
-            size="small"
-            color="success"
-            title="Make Payment / Receipt"
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate('/vouchers', { 
-                state: { 
-                  autoFill: { 
-                    transactionId: params.row.id,
-                    transactionData: params.row,
-                    partyAccountName: params.row.supplierCustomer, 
-                    amount: params.row.amount, 
-                    description: `${params.row.type === 'PURCHASE' ? 'Payment' : 'Receipt'} for ${params.row.srNumber}`, 
-                    voucherType: params.row.type === 'PURCHASE' ? 'PAYMENT' : 'RECEIPT' 
+          {userRole === 'ADMIN' && (
+            <IconButton 
+              size="small"
+              color="success"
+              title="Make Payment / Receipt"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate('/vouchers', { 
+                  state: { 
+                    autoFill: { 
+                      transactionId: params.row.id,
+                      transactionData: params.row,
+                      partyAccountName: params.row.supplierCustomer, 
+                      amount: params.row.amount, 
+                      description: `${params.row.type === 'PURCHASE' ? 'Payment' : 'Receipt'} for ${params.row.srNumber}`, 
+                      voucherType: params.row.type === 'PURCHASE' ? 'PAYMENT' : 'RECEIPT' 
+                    } 
                   } 
-                } 
-              });
-            }}
-          >
-            <CurrencyRupeeIcon fontSize="small" />
-          </IconButton>
+                });
+              }}
+            >
+              <CurrencyRupeeIcon fontSize="small" />
+            </IconButton>
+          )}
           <IconButton 
             size="small"
             color="info"
