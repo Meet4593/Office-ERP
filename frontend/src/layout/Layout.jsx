@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
@@ -73,6 +73,37 @@ export default function Layout() {
   
   const navigate = useNavigate();
   const location = useLocation();
+
+  // ── Global keyboard shortcuts ──────────────────────────────────────────────
+  // Escape → go back to previous page
+  // Alt + 1-9 → navigate to nth sidebar menu item
+  const handleGlobalKey = useCallback((e) => {
+    // Skip if user is typing in an input/textarea/select
+    const tag = e.target.tagName.toLowerCase();
+    const isTyping = ['input', 'textarea', 'select'].includes(tag) || e.target.isContentEditable;
+
+    if (e.key === 'Escape' && !isTyping) {
+      e.preventDefault();
+      navigate(-1); // go back
+      return;
+    }
+
+    // Alt + number → jump to sidebar menu item
+    if (e.altKey && !e.ctrlKey && !e.shiftKey) {
+      const num = parseInt(e.key);
+      if (!isNaN(num) && num >= 1 && num <= menuItems.length) {
+        e.preventDefault();
+        navigate(menuItems[num - 1].path);
+        return;
+      }
+    }
+  }, [navigate, menuItems]);
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleGlobalKey);
+    return () => window.removeEventListener('keydown', handleGlobalKey);
+  }, [handleGlobalKey]);
+  // ─────────────────────────────────────────────────────────────────────────
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -177,7 +208,7 @@ export default function Layout() {
       </Toolbar>
       <Divider />
       <List sx={{ flexGrow: 1, px: 2, pt: 2 }}>
-        {menuItems.map((item) => (
+        {menuItems.map((item, index) => (
           <ListItem key={item.text} disablePadding sx={{ mb: 1 }}>
             <ListItemButton
               selected={location.pathname === item.path}
@@ -203,16 +234,43 @@ export default function Layout() {
                 {item.icon}
               </ListItemIcon>
               <ListItemText primary={item.text} primaryTypographyProps={{ fontWeight: 500 }} />
+              <Typography
+                variant="caption"
+                sx={{
+                  ml: 'auto',
+                  px: 0.7,
+                  py: 0.1,
+                  borderRadius: '4px',
+                  bgcolor: location.pathname === item.path ? 'rgba(255,255,255,0.25)' : 'action.hover',
+                  color: location.pathname === item.path ? 'primary.contrastText' : 'text.disabled',
+                  fontFamily: 'monospace',
+                  fontSize: '0.65rem',
+                  lineHeight: 1.8,
+                  userSelect: 'none',
+                }}
+              >
+                Alt+{index + 1}
+              </Typography>
             </ListItemButton>
           </ListItem>
         ))}
       </List>
       <Divider />
       <Box sx={{ p: 2 }}>
-        <Typography variant="caption" color="text.secondary">
-          v1.0.0 &copy; 2026 Nexus
+        <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
+          ⌨ Keyboard Shortcuts
+        </Typography>
+        <Typography variant="caption" color="text.disabled" sx={{ display: 'block', lineHeight: 1.8 }}>
+          <b>Esc</b> — Go back<br />
+          <b>Alt+1…{menuItems.length}</b> — Navigate menu<br />
+          <b>↑ / ↓</b> — Move between fields<br />
+          <b>Enter</b> — Next field
+        </Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+          v1.0.0 © 2026 Nexus
         </Typography>
       </Box>
+
     </Box>
   );
 
