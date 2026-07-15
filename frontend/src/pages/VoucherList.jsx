@@ -15,6 +15,8 @@ import { getVouchers, deleteVoucher, createVoucher, getTransactions, updateTrans
 export default function VoucherList() {
   const navigate = useNavigate();
   const location = useLocation();
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const userRole = user.role;
   const [rows, setRows] = useState([]);
   const [partyOptions, setPartyOptions] = useState([]);
   
@@ -183,12 +185,16 @@ export default function VoucherList() {
 
   const ActionButtons = ({ id }) => (
     <Box sx={{ display: 'inline-flex', opacity: 0.6, '&:hover': { opacity: 1 }, ml: 1 }}>
-      <IconButton size="small" onClick={() => navigate(`/vouchers/edit/${id}`)} sx={{ p: 0.5 }}>
-        <EditIcon sx={{ fontSize: 14 }} color="primary" />
-      </IconButton>
-      <IconButton size="small" onClick={() => openDeleteDialog(id)} sx={{ p: 0.5 }}>
-        <DeleteIcon sx={{ fontSize: 14 }} color="error" />
-      </IconButton>
+      {userRole === 'ADMIN' && (
+        <>
+          <IconButton size="small" onClick={() => navigate(`/vouchers/edit/${id}`)} sx={{ p: 0.5 }}>
+            <EditIcon sx={{ fontSize: 14 }} color="primary" />
+          </IconButton>
+          <IconButton size="small" onClick={() => openDeleteDialog(id)} sx={{ p: 0.5 }}>
+            <DeleteIcon sx={{ fontSize: 14 }} color="error" />
+          </IconButton>
+        </>
+      )}
     </Box>
   );
 
@@ -320,112 +326,114 @@ export default function VoucherList() {
       </Box>
 
       {/* Quick Entry Form */}
-      <Paper sx={{ p: 2, mb: 3, border: '1px solid #ccc' }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, color: 'primary.main' }}>
-          Quick Entry
-        </Typography>
-        <Grid container spacing={2} alignItems="center">
-          {/* Row 1 */}
-          <Grid item xs={12} sm={4}>
-            <TextField 
-              select 
-              fullWidth 
-              label="Type" 
-              value={formData.voucherType} 
-              onChange={handleFormChange('voucherType')}
-              size="small"
-              sx={{ minWidth: 150 }}
-            >
-              <MenuItem value="RECEIPT">Receipt (Inward)</MenuItem>
-              <MenuItem value="PAYMENT">Payment (Outward)</MenuItem>
-              <MenuItem value="CONTRA">Contra</MenuItem>
-            </TextField>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <TextField 
-              select 
-              fullWidth 
-              label="Account" 
-              value={formData.transactionMode} 
-              onChange={handleFormChange('transactionMode')}
-              size="small"
-              sx={{ minWidth: 150 }}
-            >
-              <MenuItem value="CASH">Cash</MenuItem>
-              <MenuItem value="BANK">Bank</MenuItem>
-            </TextField>
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <DatePicker
-              label="Date"
-              value={formData.date}
-              onChange={handleDateChange}
-              slotProps={{ textField: { fullWidth: true, size: 'small' } }}
-            />
-          </Grid>
+      {userRole === 'ADMIN' && (
+        <Paper sx={{ p: 2, mb: 3, border: '1px solid #ccc' }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, color: 'primary.main' }}>
+            Quick Entry
+          </Typography>
+          <Grid container spacing={2} alignItems="center">
+            {/* Row 1 */}
+            <Grid item xs={12} sm={4}>
+              <TextField 
+                select 
+                fullWidth 
+                label="Type" 
+                value={formData.voucherType} 
+                onChange={handleFormChange('voucherType')}
+                size="small"
+                sx={{ minWidth: 150 }}
+              >
+                <MenuItem value="RECEIPT">Receipt (Inward)</MenuItem>
+                <MenuItem value="PAYMENT">Payment (Outward)</MenuItem>
+                <MenuItem value="CONTRA">Contra</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField 
+                select 
+                fullWidth 
+                label="Account" 
+                value={formData.transactionMode} 
+                onChange={handleFormChange('transactionMode')}
+                size="small"
+                sx={{ minWidth: 150 }}
+              >
+                <MenuItem value="CASH">Cash</MenuItem>
+                <MenuItem value="BANK">Bank</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <DatePicker
+                label="Date"
+                value={formData.date}
+                onChange={handleDateChange}
+                slotProps={{ textField: { fullWidth: true, size: 'small' } }}
+              />
+            </Grid>
 
-          {/* Row 2 */}
-          <Grid item xs={12} sm={3}>
-            <Autocomplete
-              fullWidth
-              size="small"
-              freeSolo
-              forcePopupIcon={true}
-              options={partyOptions}
-              value={formData.partyAccountName}
-              onInputChange={(e, newValue) => setFormData({ ...formData, partyAccountName: newValue })}
-              sx={{ minWidth: 150 }}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Party"
-                  size="small"
-                  fullWidth
-                />
-              )}
-            />
+            {/* Row 2 */}
+            <Grid item xs={12} sm={3}>
+              <Autocomplete
+                fullWidth
+                size="small"
+                freeSolo
+                forcePopupIcon={true}
+                options={partyOptions}
+                value={formData.partyAccountName}
+                onInputChange={(e, newValue) => setFormData({ ...formData, partyAccountName: newValue })}
+                sx={{ minWidth: 150 }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Party"
+                    size="small"
+                    fullWidth
+                  />
+                )}
+              />
+            </Grid>
+            <Grid item xs={12} sm={2}>
+              <TextField
+                fullWidth
+                label="Month"
+                size="small"
+                value={formData.month}
+                onChange={handleFormChange('month')}
+              />
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <TextField
+                fullWidth
+                label="Description"
+                size="small"
+                value={formData.description}
+                onChange={handleFormChange('description')}
+              />
+            </Grid>
+            <Grid item xs={12} sm={2}>
+              <TextField
+                fullWidth
+                label="Amount (₹)"
+                size="small"
+                type="number"
+                value={formData.amount}
+                onChange={handleFormChange('amount')}
+              />
+            </Grid>
+            <Grid item xs={12} sm={2}>
+              <Button 
+                variant="contained" 
+                color="primary" 
+                fullWidth 
+                onClick={handleQuickSave}
+                sx={{ height: '40px' }}
+              >
+                Add Entry
+              </Button>
+            </Grid>
           </Grid>
-          <Grid item xs={12} sm={2}>
-            <TextField
-              fullWidth
-              label="Month"
-              size="small"
-              value={formData.month}
-              onChange={handleFormChange('month')}
-            />
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <TextField
-              fullWidth
-              label="Description"
-              size="small"
-              value={formData.description}
-              onChange={handleFormChange('description')}
-            />
-          </Grid>
-          <Grid item xs={12} sm={2}>
-            <TextField
-              fullWidth
-              label="Amount (₹)"
-              size="small"
-              type="number"
-              value={formData.amount}
-              onChange={handleFormChange('amount')}
-            />
-          </Grid>
-          <Grid item xs={12} sm={2}>
-            <Button 
-              variant="contained" 
-              color="primary" 
-              fullWidth 
-              onClick={handleQuickSave}
-              sx={{ height: '40px' }}
-            >
-              Add Entry
-            </Button>
-          </Grid>
-        </Grid>
-      </Paper>
+        </Paper>
+      )}
 
       {/* Ledger UI matching the screenshot */}
       <Paper sx={{ width: '100%', overflow: 'hidden', border: '1px solid #ccc', borderRadius: 0 }}>

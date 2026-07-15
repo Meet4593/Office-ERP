@@ -27,9 +27,9 @@ export default function TransactionList({ type, title, newRoute }) {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const userRole = user.role;
   const userPerms = user.permissions || [];
-  const canEdit = userRole === 'ADMIN' || userPerms.includes('EDIT');
-  const canDelete = userRole === 'ADMIN' || userPerms.includes('DELETE');
-  const canAdd = userRole === 'ADMIN' || userPerms.includes('ADD');
+  const canEdit = userRole === 'ADMIN';
+  const canDelete = userRole === 'ADMIN';
+  const canAdd = userRole === 'ADMIN';
 
   const [rows, setRows] = useState([]);
   

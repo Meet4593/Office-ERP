@@ -12,6 +12,8 @@ import { exportToCSV } from '../utils/exportUtils';
 
 export default function JournalList() {
   const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const userRole = user.role;
   const [rows, setRows] = useState([]);
   
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -87,26 +89,30 @@ export default function JournalList() {
       width: 120,
       renderCell: (params) => (
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', height: '100%' }}>
-          <IconButton 
-            size="small" 
-            color="primary"
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/journal/edit/${params.row.id}`);
-            }}
-          >
-            <EditIcon fontSize="small" />
-          </IconButton>
-          <IconButton 
-            size="small" 
-            color="error"
-            onClick={(e) => {
-              e.stopPropagation();
-              openDeleteDialog(params.row.id);
-            }}
-          >
-            <DeleteIcon fontSize="small" />
-          </IconButton>
+          {userRole === 'ADMIN' && (
+            <IconButton 
+              size="small" 
+              color="primary"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/journal/edit/${params.row.id}`);
+              }}
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+          )}
+          {userRole === 'ADMIN' && (
+            <IconButton 
+              size="small" 
+              color="error"
+              onClick={(e) => {
+                e.stopPropagation();
+                openDeleteDialog(params.row.id);
+              }}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          )}
         </Box>
       )
     }
@@ -167,14 +173,16 @@ export default function JournalList() {
           >
             Export to Excel
           </Button>
-          <Button 
-            variant="contained" 
-            color="primary" 
-            startIcon={<AddIcon />}
-            onClick={() => navigate('/journal/new')}
-          >
-            New Journal
-          </Button>
+          {userRole === 'ADMIN' && (
+            <Button 
+              variant="contained" 
+              color="primary" 
+              startIcon={<AddIcon />}
+              onClick={() => navigate('/journal/new')}
+            >
+              New Journal
+            </Button>
+          )}
         </Box>
       </Box>
 
