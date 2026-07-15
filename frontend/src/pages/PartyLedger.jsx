@@ -5,9 +5,12 @@ import {
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import DownloadIcon from '@mui/icons-material/Download';
+import PrintIcon from '@mui/icons-material/Print';
 import dayjs from 'dayjs';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { getPartyLedger, getMasterData, getTransactions } from '../services/api';
 
 export default function PartyLedger() {
@@ -108,6 +111,92 @@ export default function PartyLedger() {
     saveAs(new Blob([buffer]), `${selectedParty}_Ledger_${dayjs().format('YYYYMMDD')}.xlsx`);
   };
 
+  const handlePrintPDF = () => {
+    if (!ledgerData) return;
+
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const pageW = doc.internal.pageSize.getWidth();
+
+    // ── Header ─────────────────────────────────────────
+    doc.setFillColor(25, 118, 210);
+    doc.rect(0, 0, pageW, 28, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('PARTY LEDGER', pageW / 2, 12, { align: 'center' });
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.text(selectedParty, pageW / 2, 21, { align: 'center' });
+
+    // ── Period info ────────────────────────────────────
+    doc.setTextColor(60, 60, 60);
+    doc.setFontSize(9);
+    const period = `Period: ${startDate ? startDate.format('DD/MM/YYYY') : 'All'} to ${endDate ? endDate.format('DD/MM/YYYY') : 'All'}`;
+    const printed = `Printed: ${dayjs().format('DD/MM/YYYY hh:mm A')}`;
+    doc.text(period, 14, 36);
+    doc.text(printed, pageW - 14, 36, { align: 'right' });
+
+    // ── Opening Balance ───────────────────────────────
+    const ob = ledgerData.openingBalance;
+    doc.setFontSize(9);
+    doc.text(`Opening Balance: ${ob >= 0 ? '₹ ' + ob.toLocaleString('en-IN') + ' Dr' : '₹ ' + Math.abs(ob).toLocaleString('en-IN') + ' Cr'}`, 14, 43);
+
+    // ── Table ─────────────────────────────────────────
+    const tableBody = ledgerData.entries.map(entry => [
+      dayjs(entry.date).format('DD/MM/YYYY'),
+      entry.particulars || '',
+      entry.description || '',
+      entry.debit  ? '₹ ' + entry.debit.toLocaleString('en-IN')  : '—',
+      entry.credit ? '₹ ' + entry.credit.toLocaleString('en-IN') : '—',
+      (entry.balance >= 0
+        ? '₹ ' + entry.balance.toLocaleString('en-IN') + ' Dr'
+        : '₹ ' + Math.abs(entry.balance).toLocaleString('en-IN') + ' Cr'),
+    ]);
+
+    const totalDebit  = ledgerData.entries.reduce((s, e) => s + (e.debit  || 0), 0);
+    const totalCredit = ledgerData.entries.reduce((s, e) => s + (e.credit || 0), 0);
+    const cb = ledgerData.closingBalance;
+
+    autoTable(doc, {
+      startY: 47,
+      head: [['Date', 'Particulars', 'Description', 'Debit (₹)', 'Credit (₹)', 'Balance (₹)']],
+      body: tableBody,
+      foot: [[
+        '', 'CLOSING BALANCE', '',
+        '₹ ' + totalDebit.toLocaleString('en-IN'),
+        '₹ ' + totalCredit.toLocaleString('en-IN'),
+        cb >= 0
+          ? '₹ ' + cb.toLocaleString('en-IN') + ' Dr'
+          : '₹ ' + Math.abs(cb).toLocaleString('en-IN') + ' Cr',
+      ]],
+      styles: { fontSize: 8, cellPadding: 2.5 },
+      headStyles: { fillColor: [25, 118, 210], textColor: 255, fontStyle: 'bold' },
+      footStyles: { fillColor: [227, 242, 253], textColor: [30, 30, 30], fontStyle: 'bold' },
+      columnStyles: {
+        0: { cellWidth: 22 },
+        1: { cellWidth: 38 },
+        2: { cellWidth: 40 },
+        3: { cellWidth: 26, halign: 'right' },
+        4: { cellWidth: 26, halign: 'right' },
+        5: { cellWidth: 30, halign: 'right' },
+      },
+      alternateRowStyles: { fillColor: [248, 250, 255] },
+      margin: { left: 14, right: 14 },
+      showFoot: 'lastPage',
+    });
+
+    // ── Footer on every page ──────────────────────────
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(7);
+      doc.setTextColor(150);
+      doc.text(`Page ${i} of ${pageCount}`, pageW / 2, doc.internal.pageSize.getHeight() - 6, { align: 'center' });
+    }
+
+    doc.save(`${selectedParty}_Ledger_${dayjs().format('YYYYMMDD')}.pdf`);
+  };
+
   const formatMoney = (amount) => {
     if (!amount) return '—';
     return `₹ ${Math.abs(amount).toLocaleString('en-IN')}`;
@@ -118,14 +207,24 @@ export default function PartyLedger() {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" sx={{ fontWeight: 'bold' }}>Party Ledger</Typography>
         {ledgerData && (
-          <Button 
-            variant="contained" 
-            color="secondary" 
-            startIcon={<DownloadIcon />} 
-            onClick={handleExport}
-          >
-            Export to Excel
-          </Button>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button 
+              variant="contained"
+              color="error"
+              startIcon={<PrintIcon />}
+              onClick={handlePrintPDF}
+            >
+              Print PDF
+            </Button>
+            <Button 
+              variant="contained" 
+              color="secondary" 
+              startIcon={<DownloadIcon />} 
+              onClick={handleExport}
+            >
+              Export Excel
+            </Button>
+          </Box>
         )}
       </Box>
 
