@@ -240,6 +240,11 @@ export default function MasterData() {
               toolbar: { showQuickFilter: true },
             }}
             sx={{ border: 0 }}
+            initialState={{
+              sorting: {
+                sortModel: [{ field: 'id', sort: 'asc' }],
+              },
+            }}
           />
         </Box>
       </Paper>
@@ -306,7 +311,7 @@ export default function MasterData() {
             color="primary"
             fullWidth
           >
-            + Add Another Row
+            Add Another Row
           </Button>
         </DialogContent>
         <DialogActions sx={{ p: 2, justifyContent: 'space-between' }}>
