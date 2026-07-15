@@ -82,6 +82,7 @@ export default function UserManagement() {
       fetchUsers();
     } catch (err) {
       console.error(err);
+      alert(err.response?.data?.message || 'Error saving user. Please try again.');
     }
   };
 
