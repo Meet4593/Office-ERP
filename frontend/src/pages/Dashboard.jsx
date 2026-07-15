@@ -70,11 +70,14 @@ export default function Dashboard() {
         setRecentTransactions(transRes.data.slice(0, 7));
 
         // Format data for Recharts (last 10 transactions)
-        const formattedChartData = transRes.data.slice(0, 10).reverse().map(t => ({
-          name: dayjs(t.date).format('DD MMM'),
-          sales: t.type === 'SALES' ? t.amount : 0,
-          purchases: t.type === 'PURCHASE' ? t.amount : 0,
-        }));
+        const formattedChartData = transRes.data.slice(0, 10).reverse().map(t => {
+          const amount = (parseFloat(t.unit || 0) * parseFloat(t.rate || 0)) || t.rate || 0;
+          return {
+            name: dayjs(t.date).format('DD MMM'),
+            sales: t.type === 'SALE' ? amount : 0,
+            purchases: t.type === 'PURCHASE' ? amount : 0,
+          };
+        });
         
         setChartData(formattedChartData);
       } catch (err) {

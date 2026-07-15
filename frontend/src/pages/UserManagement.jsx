@@ -8,8 +8,7 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
-import { getMasterData } from '../services/api';
-// We will need api functions to fetch/update users
+import { getMasterData, getUsers, updateUser } from '../services/api';
 
 export default function UserManagement() {
   const [users, setUsers] = useState([]);
@@ -29,12 +28,8 @@ export default function UserManagement() {
 
   const fetchUsers = async () => {
     try {
-      const token = localStorage.getItem('token');
-      // For now, mock it since we haven't built the backend route
-      // We'll need to build a GET /api/users route
-      const res = await fetch('/api/users', { headers: { Authorization: `Bearer ${token}` } });
-      const data = await res.json();
-      if (Array.isArray(data)) setUsers(data);
+      const res = await getUsers();
+      if (Array.isArray(res.data)) setUsers(res.data);
     } catch (err) {
       console.error(err);
     }
@@ -60,25 +55,16 @@ export default function UserManagement() {
 
   const handleSave = async () => {
     try {
-      const token = localStorage.getItem('token');
       const permsArray = Object.keys(formData.permissions).filter(k => formData.permissions[k]);
       
       const payload = {
-        name: formData.name,
-        email: formData.email,
         role: formData.role,
         department: formData.department || null,
         permissions: permsArray
       };
 
       if (formData.id) {
-        await fetch(`/api/users/${formData.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify(payload)
-        });
-      } else {
-        // Create user logic (might require password)
+        await updateUser(formData.id, payload);
       }
       setOpen(false);
       fetchUsers();

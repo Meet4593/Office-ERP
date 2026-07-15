@@ -6,22 +6,30 @@ const router = Router();
 
 router.get('/stats', authenticateToken, async (req, res) => {
   try {
-    const totalPurchases = await prisma.transaction.count({
-      where: { type: 'PURCHASE' }
-    });
-    const totalSales = await prisma.transaction.count({
-      where: { type: 'SALE' }
-    });
+    const transactions = await prisma.transaction.findMany();
     
-    // Using a simplistic calculation, realistically you'd sum up 'rate' or another field
-    const pendingPayments = await prisma.transaction.count({
-      where: { status: 'PENDING' }
+    let totalPurchases = 0;
+    let totalSales = 0;
+    let pendingPayments = 0;
+
+    transactions.forEach(t => {
+      const unit = parseFloat(t.unit || '0');
+      const rate = t.rate || 0;
+      const amount = (unit * rate) || rate || 0;
+
+      if (t.type === 'PURCHASE') totalPurchases += amount;
+      if (t.type === 'SALE') totalSales += amount;
+      
+      if (t.status === 'PENDING') {
+        const balance = amount - (t.paidAmount || 0);
+        if (balance > 0) pendingPayments += balance;
+      }
     });
 
     res.json({
-      totalPurchases,
-      totalSales,
-      pendingPayments
+      totalPurchases: `₹ ${totalPurchases.toLocaleString()}`,
+      totalSales: `₹ ${totalSales.toLocaleString()}`,
+      pendingPayments: `₹ ${pendingPayments.toLocaleString()}`
     });
   } catch (error) {
     console.error(error);

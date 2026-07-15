@@ -51,4 +51,8 @@ export const createVoucher = (data) => api.post('/vouchers', data);
 export const updateVoucher = (id, data) => api.put(`/vouchers/${id}`, data);
 export const deleteVoucher = (id, password) => api.delete(`/vouchers/${id}`, { data: { password } });
 
+// Users
+export const getUsers = () => api.get('/users');
+export const updateUser = (id, data) => api.put(`/users/${id}`, data);
+
 export default api;
