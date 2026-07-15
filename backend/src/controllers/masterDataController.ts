@@ -41,14 +41,14 @@ const getModel = (type: string) => {
 export const addRecord = async (req: Request, res: Response) => {
   const type = req.params.type as string;
   const model = getModel(type);
-  if (!model) return res.status(400).json({ message: 'Invalid master data type' });
+  if (!model) return res.status(400).json({ message: `Invalid master data type: "${type}"` });
 
   try {
     const newRecord = await model.create({ data: req.body });
     res.status(201).json(newRecord);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error adding record:', error);
-    res.status(500).json({ message: 'Error adding record (Check for duplicates)' });
+    res.status(500).json({ message: error.message || 'Error adding record' });
   }
 };
 
