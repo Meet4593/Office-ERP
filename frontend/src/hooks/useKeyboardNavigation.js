@@ -10,6 +10,10 @@ export default function useKeyboardNavigation() {
     if (e.target.tagName.toLowerCase() === 'textarea') return;
     // Don't interfere with dropdowns/selects natively using arrows, but simple inputs are fine
     if (e.target.tagName.toLowerCase() === 'select') return;
+    
+    // Crucial fix: Let MUI Autocomplete handle ArrowUp/ArrowDown for list navigation
+    if (e.target.getAttribute('role') === 'combobox' && ['ArrowUp', 'ArrowDown'].includes(e.key)) return;
+
 
     // Get all focusable input elements within the current form or the closest parent container
     const container = e.target.closest('form') || e.target.closest('.MuiBox-root') || document.body;
