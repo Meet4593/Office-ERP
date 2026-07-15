@@ -8,7 +8,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import dayjs from 'dayjs';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import { getPartyLedger, getTransactions } from '../services/api';
+import { getPartyLedger, getMasterData } from '../services/api';
 
 export default function PartyLedger() {
   const [partyOptions, setPartyOptions] = useState([]);
@@ -19,10 +19,12 @@ export default function PartyLedger() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Fetch unique party names from transactions for autocomplete
-    getTransactions().then(res => {
-      const parties = [...new Set(res.data.map(t => t.partAccountName).filter(Boolean))];
-      setPartyOptions(parties.sort());
+    // Fetch all parties from master data (suppliers + customers)
+    getMasterData().then(res => {
+      const suppliers = (res.data.suppliers || []).map(s => s.name);
+      const customers = (res.data.customers || []).map(c => c.name);
+      const all = [...new Set([...suppliers, ...customers])].filter(Boolean).sort();
+      setPartyOptions(all);
     }).catch(console.error);
   }, []);
 

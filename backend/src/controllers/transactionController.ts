@@ -43,57 +43,76 @@ export const createTransaction = async (req: AuthRequest, res: Response) => {
 
     let {
       date, transactionNumber, supplierInvoiceNum, partAccountName,
-      type, item, detailNumber, department, machineNumber, servicePerson,
-      description, unit, rate, paidDate, paymentMode, status, remarks
+      type, department, paidDate, paymentMode, status, remarks,
+      items // NEW: array of item rows
     } = req.body;
 
     if (userRole !== 'ADMIN' && userDept) {
-      department = userDept; // Force department to employee's assigned department
+      department = userDept;
     }
 
     const attachmentUrl = req.file ? `/uploads/${req.file.filename}` : null;
-    
-    // Auto-generate SR Number robustly using the last inserted ID so deletions don't cause duplicates
-    const lastTransaction = await prisma.transaction.findFirst({
-      orderBy: { id: 'desc' }
-    });
-    const nextId = lastTransaction ? lastTransaction.id + 1 : 1;
-    const srNumber = `SR-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(nextId).padStart(4, '0')}`;
 
-    const transaction = await prisma.transaction.create({
-      data: {
-        srNumber,
-        date: new Date(date),
-        transactionNumber,
-        supplierInvoiceNum,
-        partAccountName,
-        type: type || 'PURCHASE',
-        item,
-        detailNumber,
-        department,
-        machineNumber,
-        servicePerson,
-        description,
-        unit,
-        rate: rate ? parseFloat(rate) : null,
-        paidDate: paidDate ? new Date(paidDate) : null,
-        paymentMode,
-        status: status || 'PENDING',
-        remarks,
-        attachmentUrl,
-        createdByUserId: req.user?.userId || 1, // Fallback if auth is skipped for dev
+    // Parse items if sent as JSON string (from FormData)
+    let itemRows: any[] = [];
+    if (items) {
+      try {
+        itemRows = typeof items === 'string' ? JSON.parse(items) : items;
+      } catch {
+        itemRows = [];
       }
-    });
+    }
 
-    // Auto-sync any newly typed entries to Master Data
-    await syncMasterData(req.body);
+    // If no items array, fall back to single-item mode (backward compatible)
+    if (!itemRows || itemRows.length === 0) {
+      const { item, detailNumber, machineNumber, servicePerson, description, unit, rate } = req.body;
+      itemRows = [{ item, detailNumber, machineNumber, servicePerson, description, unit, rate }];
+    }
 
-    res.status(201).json(transaction);
+    // Get last ID to generate unique SR numbers
+    const lastTransaction = await prisma.transaction.findFirst({ orderBy: { id: 'desc' } });
+    let nextId = lastTransaction ? lastTransaction.id + 1 : 1;
+
+    const created = [];
+    for (const row of itemRows) {
+      const srNumber = `SR-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(nextId).padStart(4, '0')}`;
+      nextId++;
+
+      const transaction = await prisma.transaction.create({
+        data: {
+          srNumber,
+          date: new Date(date),
+          transactionNumber,
+          supplierInvoiceNum,
+          partAccountName,
+          type: type || 'PURCHASE',
+          item: row.item || null,
+          detailNumber: row.detailNumber || null,
+          department,
+          machineNumber: row.machineNumber || null,
+          servicePerson: row.servicePerson || null,
+          description: row.description || null,
+          unit: row.unit ? String(row.unit) : null,
+          rate: row.rate ? parseFloat(row.rate) : null,
+          paidDate: paidDate ? new Date(paidDate) : null,
+          paymentMode,
+          status: status || 'PENDING',
+          remarks,
+          attachmentUrl,
+          createdByUserId: req.user?.userId || 1,
+        }
+      });
+      created.push(transaction);
+      await syncMasterData({ ...req.body, ...row, department });
+    }
+
+    res.status(201).json(created.length === 1 ? created[0] : created);
   } catch (error: any) {
     console.error('Error in createTransaction:', error);
     res.status(500).json({ message: error.message || 'Error creating transaction' });
   }
 };
+
 
 export const getTransactions = async (req: AuthRequest, res: Response) => {
   try {
