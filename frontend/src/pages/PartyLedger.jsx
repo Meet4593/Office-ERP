@@ -8,7 +8,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import dayjs from 'dayjs';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import { getPartyLedger, getMasterData } from '../services/api';
+import { getPartyLedger, getMasterData, getTransactions } from '../services/api';
 
 export default function PartyLedger() {
   const [partyOptions, setPartyOptions] = useState([]);
@@ -19,13 +19,16 @@ export default function PartyLedger() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Fetch all parties from master data (suppliers + customers)
-    getMasterData().then(res => {
-      const suppliers = (res.data.suppliers || []).map(s => s.name);
-      const customers = (res.data.customers || []).map(c => c.name);
-      const all = [...new Set([...suppliers, ...customers])].filter(Boolean).sort();
-      setPartyOptions(all);
-    }).catch(console.error);
+    // Load from BOTH Master Data AND existing transaction party names for a complete list
+    Promise.all([getMasterData(), getTransactions()])
+      .then(([masterRes, txRes]) => {
+        const suppliers = (masterRes.data.suppliers || []).map(s => s.name);
+        const customers = (masterRes.data.customers || []).map(c => c.name);
+        const fromTx = (txRes.data || []).map(t => t.partAccountName).filter(Boolean);
+        const all = [...new Set([...suppliers, ...customers, ...fromTx])].filter(Boolean).sort();
+        setPartyOptions(all);
+      })
+      .catch(console.error);
   }, []);
 
   const handleGenerate = async () => {
@@ -130,12 +133,20 @@ export default function PartyLedger() {
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} sm={4}>
             <Autocomplete
-              freeSolo
               options={partyOptions}
-              value={selectedParty}
-              onInputChange={(e, newValue) => setSelectedParty(newValue)}
+              value={selectedParty || null}
+              onChange={(e, newValue) => setSelectedParty(newValue || '')}
+              onInputChange={(e, newValue, reason) => { if (reason === 'input') setSelectedParty(newValue || ''); }}
+              isOptionEqualToValue={(opt, val) => opt === val}
               sx={{ minWidth: 200 }}
-              renderInput={(params) => <TextField {...params} label="Party Name" fullWidth />}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Party Name"
+                  fullWidth
+                  placeholder={partyOptions.length ? `Choose from ${partyOptions.length} parties...` : 'Loading...'}
+                />
+              )}
             />
           </Grid>
           <Grid item xs={12} sm={3}>
