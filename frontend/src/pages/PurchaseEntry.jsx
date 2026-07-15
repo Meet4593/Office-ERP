@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Box, Typography, Paper, Grid, TextField, MenuItem, 
-  Button, Divider, Snackbar, Alert
+  Button, Divider, Snackbar, Alert, Autocomplete
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import PrintIcon from '@mui/icons-material/Print';
@@ -139,20 +139,34 @@ export default function PurchaseEntry() {
             <TextField fullWidth label="Supplier Invoice Number" value={formData.supplierInvoiceNum || ''} onChange={handleChange('supplierInvoiceNum')} size="small" />
           </Grid>
           <Grid item xs={12} sm={6} md={4}>
-            <TextField fullWidth select label="Party Account Name" value={formData.partAccountName || ''} onChange={handleChange('partAccountName')} size="small" SelectProps={{ displayEmpty: true }} sx={{ minWidth: 190 }}>
-              <MenuItem value=""><em>Select...</em></MenuItem>
-              {partyOptions?.map((opt) => (
-                <MenuItem key={opt.id} value={opt.name}>{opt.name}</MenuItem>
-              ))}
-            </TextField>
+            <Autocomplete
+              fullWidth
+              size="small"
+              freeSolo
+              forcePopupIcon={true}
+              options={partyOptions?.map(o => o.name) || []}
+              value={formData.partAccountName || ''}
+              onInputChange={(e, newValue) => setFormData({ ...formData, partAccountName: newValue })}
+              sx={{ minWidth: 190 }}
+              renderInput={(params) => (
+                <TextField {...params} label="Party Account Name" size="small" fullWidth />
+              )}
+            />
           </Grid>
           <Grid item xs={12} sm={6} md={4}>
-            <TextField fullWidth select label="Department" value={formData.department || ''} onChange={handleChange('department')} size="small" SelectProps={{ displayEmpty: true }} sx={{ minWidth: 190 }}>
-              <MenuItem value=""><em>Select...</em></MenuItem>
-              {masterData.departments?.map((opt) => (
-                <MenuItem key={opt.id} value={opt.name}>{opt.name}</MenuItem>
-              ))}
-            </TextField>
+            <Autocomplete
+              fullWidth
+              size="small"
+              freeSolo
+              forcePopupIcon={true}
+              options={masterData.departments?.map(o => o.name) || []}
+              value={formData.department || ''}
+              onInputChange={(e, newValue) => setFormData({ ...formData, department: newValue })}
+              sx={{ minWidth: 190 }}
+              renderInput={(params) => (
+                <TextField {...params} label="Department" size="small" fullWidth />
+              )}
+            />
           </Grid>
         </Grid>
 
@@ -163,23 +177,37 @@ export default function PurchaseEntry() {
         </Typography>
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6} md={3}>
-            <TextField fullWidth select label="Item Name" value={formData.item || ''} onChange={handleChange('item')} size="small" SelectProps={{ displayEmpty: true }} sx={{ minWidth: 190 }}>
-              <MenuItem value=""><em>Select...</em></MenuItem>
-              {masterData.items?.map((opt) => (
-                <MenuItem key={opt.id} value={opt.name}>{opt.name}</MenuItem>
-              ))}
-            </TextField>
+            <Autocomplete
+              fullWidth
+              size="small"
+              freeSolo
+              forcePopupIcon={true}
+              options={masterData.items?.map(o => o.name) || []}
+              value={formData.item || ''}
+              onInputChange={(e, newValue) => setFormData({ ...formData, item: newValue })}
+              sx={{ minWidth: 190 }}
+              renderInput={(params) => (
+                <TextField {...params} label="Item Name" size="small" fullWidth />
+              )}
+            />
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
             <TextField fullWidth label="Detail Number" value={formData.detailNumber || ''} onChange={handleChange('detailNumber')} size="small" />
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
-            <TextField fullWidth select label="Machine Number" value={formData.machineNumber || ''} onChange={handleChange('machineNumber')} size="small" SelectProps={{ displayEmpty: true }} sx={{ minWidth: 190 }}>
-              <MenuItem value=""><em>Select...</em></MenuItem>
-              {masterData.machines?.filter(m => !formData.department || m.department === formData.department).map((opt) => (
-                <MenuItem key={opt.id} value={opt.machineNum}>{opt.machineNum} {opt.name ? `(${opt.name})` : ''}</MenuItem>
-              ))}
-            </TextField>
+            <Autocomplete
+              fullWidth
+              size="small"
+              freeSolo
+              forcePopupIcon={true}
+              options={masterData.machines?.filter(m => !formData.department || m.department === formData.department).map(o => `${o.machineNum} ${o.name ? `(${o.name})` : ''}`.trim()) || []}
+              value={formData.machineNumber || ''}
+              onInputChange={(e, newValue) => setFormData({ ...formData, machineNumber: newValue })}
+              sx={{ minWidth: 190 }}
+              renderInput={(params) => (
+                <TextField {...params} label="Machine Number" size="small" fullWidth />
+              )}
+            />
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
             <TextField fullWidth label="Service Person" value={formData.servicePerson || ''} onChange={handleChange('servicePerson')} size="small" />
