@@ -140,6 +140,7 @@ export default function PurchaseEntry() {
           </Grid>
           <Grid item xs={12} sm={6} md={4}>
             <TextField fullWidth select label="Party Account Name" value={formData.partAccountName || ''} onChange={handleChange('partAccountName')} size="small">
+              <MenuItem value=""><em>Select...</em></MenuItem>
               {partyOptions?.map((opt) => (
                 <MenuItem key={opt.id} value={opt.name}>{opt.name}</MenuItem>
               ))}
@@ -147,6 +148,7 @@ export default function PurchaseEntry() {
           </Grid>
           <Grid item xs={12} sm={6} md={4}>
             <TextField fullWidth select label="Department" value={formData.department || ''} onChange={handleChange('department')} size="small">
+              <MenuItem value=""><em>Select...</em></MenuItem>
               {masterData.departments?.map((opt) => (
                 <MenuItem key={opt.id} value={opt.name}>{opt.name}</MenuItem>
               ))}
@@ -162,6 +164,7 @@ export default function PurchaseEntry() {
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6} md={3}>
             <TextField fullWidth select label="Item Name" value={formData.item || ''} onChange={handleChange('item')} size="small">
+              <MenuItem value=""><em>Select...</em></MenuItem>
               {masterData.items?.map((opt) => (
                 <MenuItem key={opt.id} value={opt.name}>{opt.name}</MenuItem>
               ))}
@@ -172,6 +175,7 @@ export default function PurchaseEntry() {
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
             <TextField fullWidth select label="Machine Number" value={formData.machineNumber || ''} onChange={handleChange('machineNumber')} size="small">
+              <MenuItem value=""><em>Select...</em></MenuItem>
               {masterData.machines?.filter(m => !formData.department || m.department === formData.department).map((opt) => (
                 <MenuItem key={opt.id} value={opt.machineNum}>{opt.machineNum} {opt.name ? `(${opt.name})` : ''}</MenuItem>
               ))}
