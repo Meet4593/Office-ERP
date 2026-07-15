@@ -272,7 +272,7 @@ export default function PurchaseEntry() {
               size="small"
               freeSolo
               forcePopupIcon={true}
-              options={masterData.machines?.filter(m => !formData.department || m.department === formData.department).map(o => `${o.machineNum} ${o.name ? `(${o.name})` : ''}`.trim()) || []}
+              options={(masterData.machines || []).filter(m => !formData.department || m.department === formData.department).map(o => `${o.machineNum} ${o.name ? `(${o.name})` : ''}`.trim())}
               value={formData.machineNumber || ''}
               onChange={(e, newValue) => setFormData({ ...formData, machineNumber: newValue || '' })}
               onInputChange={(e, newInputValue) => setFormData({ ...formData, machineNumber: newInputValue || '' })}
