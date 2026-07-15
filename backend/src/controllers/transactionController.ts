@@ -2,6 +2,40 @@ import { Request, Response } from 'express';
 import prisma from '../utils/prisma';
 import { AuthRequest } from '../middlewares/authMiddleware';
 
+const syncMasterData = async (data: any) => {
+  try {
+    const { partAccountName, type, item, department, machineNumber } = data;
+    const dbType = type || 'PURCHASE';
+    
+    if (partAccountName) {
+      if (dbType === 'PURCHASE') {
+        const exist = await prisma.supplier.findUnique({ where: { name: partAccountName } });
+        if (!exist) await prisma.supplier.create({ data: { name: partAccountName } });
+      } else {
+        const exist = await prisma.customer.findUnique({ where: { name: partAccountName } });
+        if (!exist) await prisma.customer.create({ data: { name: partAccountName } });
+      }
+    }
+
+    if (item) {
+      const exist = await prisma.item.findUnique({ where: { name: item } });
+      if (!exist) await prisma.item.create({ data: { name: item } });
+    }
+
+    if (department) {
+      const exist = await prisma.department.findUnique({ where: { name: department } });
+      if (!exist) await prisma.department.create({ data: { name: department } });
+    }
+
+    if (machineNumber) {
+      const exist = await prisma.machine.findUnique({ where: { machineNum: machineNumber } });
+      if (!exist) await prisma.machine.create({ data: { machineNum: machineNumber, department: department || null } });
+    }
+  } catch (error) {
+    console.error('Failed to sync master data:', error);
+  }
+};
+
 export const createTransaction = async (req: AuthRequest, res: Response) => {
   try {
     const {
@@ -43,6 +77,9 @@ export const createTransaction = async (req: AuthRequest, res: Response) => {
         createdByUserId: req.user?.userId || 1, // Fallback if auth is skipped for dev
       }
     });
+
+    // Auto-sync any newly typed entries to Master Data
+    await syncMasterData(req.body);
 
     res.status(201).json(transaction);
   } catch (error: any) {
@@ -116,6 +153,9 @@ export const updateTransaction = async (req: AuthRequest, res: Response) => {
         ...(attachmentUrl && { attachmentUrl })
       }
     });
+
+    // Auto-sync any newly typed entries to Master Data
+    await syncMasterData(req.body);
 
     res.json(transaction);
   } catch (error) {
