@@ -3,9 +3,12 @@ import {
   Box, Typography, Paper, Tabs, Tab, Button, Dialog, DialogTitle, 
   DialogContent, DialogActions, TextField, IconButton, Alert, Snackbar, Tooltip, Divider, MenuItem
 } from '@mui/material';
-import { DataGrid, GridToolbar, GridActionsCellItem } from '@mui/x-data-grid';
+import { DataGrid, GridToolbar, GridActionsCellItem, GridRowModes } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import SaveIcon from '@mui/icons-material/Save';
+import CancelIcon from '@mui/icons-material/Close';
 import { getMasterData, addMasterRecord, updateMasterRecord, deleteMasterRecord } from '../services/api';
 
 const tabsConfig = [
@@ -35,6 +38,7 @@ export default function MasterData() {
   const [errorMsg, setErrorMsg] = useState('');
   const [saving, setSaving] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [rowModesModel, setRowModesModel] = useState({});
 
   const fetchData = async () => {
     setLoading(true);
@@ -116,6 +120,25 @@ export default function MasterData() {
     }
   };
 
+  const handleEditClick = (id) => () => {
+    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
+  };
+
+  const handleSaveClick = (id) => () => {
+    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
+  };
+
+  const handleCancelClick = (id) => () => {
+    setRowModesModel({
+      ...rowModesModel,
+      [id]: { mode: GridRowModes.View, ignoreModifications: true },
+    });
+  };
+
+  const handleRowModesModelChange = (newRowModesModel) => {
+    setRowModesModel(newRowModesModel);
+  };
+
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this record?')) return;
     try {
@@ -145,13 +168,40 @@ export default function MasterData() {
       type: 'actions',
       headerName: 'Actions',
       width: 100,
-      getActions: (params) => [
-        <GridActionsCellItem
-          icon={<DeleteIcon color="error" />}
-          label="Delete"
-          onClick={() => handleDelete(params.id)}
-        />,
-      ],
+      getActions: ({ id }) => {
+        const isInEditMode = rowModesModel[id]?.mode === GridRowModes.Edit;
+
+        if (isInEditMode) {
+          return [
+            <GridActionsCellItem
+              icon={<SaveIcon />}
+              label="Save"
+              sx={{ color: 'primary.main' }}
+              onClick={handleSaveClick(id)}
+            />,
+            <GridActionsCellItem
+              icon={<CancelIcon />}
+              label="Cancel"
+              onClick={handleCancelClick(id)}
+              color="inherit"
+            />,
+          ];
+        }
+
+        return [
+          <GridActionsCellItem
+            icon={<EditIcon />}
+            label="Edit"
+            onClick={handleEditClick(id)}
+            color="inherit"
+          />,
+          <GridActionsCellItem
+            icon={<DeleteIcon color="error" />}
+            label="Delete"
+            onClick={() => handleDelete(id)}
+          />,
+        ];
+      },
     }
   ];
 
@@ -180,6 +230,9 @@ export default function MasterData() {
             rows={rows}
             columns={columns}
             loading={loading}
+            editMode="row"
+            rowModesModel={rowModesModel}
+            onRowModesModelChange={handleRowModesModelChange}
             processRowUpdate={processRowUpdate}
             onProcessRowUpdateError={(error) => console.error(error)}
             slots={{ toolbar: GridToolbar }}
