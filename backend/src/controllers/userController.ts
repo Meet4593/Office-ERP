@@ -29,7 +29,7 @@ export const updateUser = async (req: AuthRequest, res: Response) => {
     const { role, department, permissions } = req.body;
     
     const updatedUser = await prisma.user.update({
-      where: { id: parseInt(id) },
+      where: { id: parseInt(id as string) },
       data: { role, department, permissions }
     });
     
