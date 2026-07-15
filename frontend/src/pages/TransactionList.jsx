@@ -32,6 +32,7 @@ export default function TransactionList({ type, title, newRoute }) {
   const canAdd = true; // Everyone can add (create) entries
 
   const [rows, setRows] = useState([]);
+  const [rawTransactions, setRawTransactions] = useState([]);
   
   // Delete Dialog State
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -54,12 +55,33 @@ export default function TransactionList({ type, title, newRoute }) {
 
   const fetchTransactions = () => {
     getTransactions().then(res => {
-      const data = res.data.map(item => ({
+      const rawData = res.data.map(item => ({
         ...item,
         amount: (parseFloat(item.unit || 0) * parseFloat(item.rate || 0)) || item.rate || 0,
         supplierCustomer: item.partAccountName || item.servicePerson || 'N/A'
       }));
-      setRows(type === 'ALL' ? data : data.filter(r => r.type === type));
+      setRawTransactions(rawData);
+
+      const filteredData = type === 'ALL' ? rawData : rawData.filter(r => r.type === type);
+
+      // Group multiple items belonging to the same bill into a single row
+      const groupedMap = new Map();
+      filteredData.forEach(item => {
+        const dateStr = item.date ? item.date.substring(0, 10) : 'nodate';
+        const inv = item.supplierInvoiceNum || 'noinv';
+        const key = `${item.type}_${dateStr}_${item.supplierCustomer}_${inv}`;
+        
+        if (!groupedMap.has(key)) {
+          groupedMap.set(key, { ...item, groupedIds: [item.id] });
+        } else {
+          const group = groupedMap.get(key);
+          group.amount += item.amount;
+          group.paidAmount += (item.paidAmount || 0);
+          group.groupedIds.push(item.id);
+        }
+      });
+
+      setRows(Array.from(groupedMap.values()));
     }).catch(err => console.error(err));
   };
 
@@ -76,8 +98,8 @@ export default function TransactionList({ type, title, newRoute }) {
     navigate(`${routePrefix}/${id}`);
   };
 
-  const openDeleteDialog = (id) => {
-    setTransactionToDelete(id);
+  const openDeleteDialog = (groupedIds) => {
+    setTransactionToDelete(groupedIds);
     setDeletePassword('');
     setDeleteDialogOpen(true);
   };
@@ -89,7 +111,10 @@ export default function TransactionList({ type, title, newRoute }) {
     }
     
     try {
-      await deleteTransaction(transactionToDelete, deletePassword);
+      const idsToDelete = Array.isArray(transactionToDelete) ? transactionToDelete : [transactionToDelete];
+      for (const id of idsToDelete) {
+        await deleteTransaction(id, deletePassword);
+      }
       setToast({ open: true, message: 'Transaction deleted successfully', severity: 'success' });
       setDeleteDialogOpen(false);
       fetchTransactions();
@@ -106,7 +131,13 @@ export default function TransactionList({ type, title, newRoute }) {
   const processRowUpdate = async (newRow, oldRow) => {
     if (newRow.status !== oldRow.status) {
       try {
-        await updateTransaction(newRow.id, newRow);
+        const idsToUpdate = newRow.groupedIds || [newRow.id];
+        for (const id of idsToUpdate) {
+          const originalTx = rawTransactions.find(t => t.id === id);
+          if (originalTx) {
+            await updateTransaction(id, { ...originalTx, status: newRow.status });
+          }
+        }
         setToast({ open: true, message: 'Status updated successfully', severity: 'success' });
         return newRow;
       } catch (err) {
@@ -218,7 +249,7 @@ export default function TransactionList({ type, title, newRoute }) {
               color="error"
               onClick={(e) => {
                 e.stopPropagation();
-                openDeleteDialog(params.row.id);
+                openDeleteDialog(params.row.groupedIds || [params.row.id]);
               }}
             >
               <DeleteIcon fontSize="small" />
