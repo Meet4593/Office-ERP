@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Box, Typography, Paper, Tabs, Tab, Button, Dialog, DialogTitle, 
-  DialogContent, DialogActions, TextField, IconButton, Alert, Snackbar
+  DialogContent, DialogActions, TextField, IconButton, Alert, Snackbar, Tooltip, Divider
 } from '@mui/material';
 import { DataGrid, GridToolbar, GridActionsCellItem } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { getMasterData, addMasterRecord, updateMasterRecord, deleteMasterRecord } from '../services/api';
 
 const tabsConfig = [
@@ -18,6 +19,12 @@ const tabsConfig = [
   { label: 'Payment Modes', endpoint: 'paymentModes', fields: [{ name: 'name', label: 'Payment Mode (e.g. CASH, BANK)' }] }
 ];
 
+const createEmptyRow = (fields) => {
+  const row = { _id: Date.now() + Math.random() };
+  fields.forEach(f => row[f.name] = '');
+  return row;
+};
+
 export default function MasterData() {
   const [tabIndex, setTabIndex] = useState(0);
   const [data, setData] = useState({});
@@ -25,8 +32,9 @@ export default function MasterData() {
   
   // Dialog State
   const [openDialog, setOpenDialog] = useState(false);
-  const [formData, setFormData] = useState({});
+  const [bulkRows, setBulkRows] = useState([]);
   const [errorMsg, setErrorMsg] = useState('');
+  const [saving, setSaving] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   const fetchData = async () => {
@@ -52,9 +60,7 @@ export default function MasterData() {
   };
 
   const handleOpenDialog = () => {
-    const initialData = {};
-    activeTab.fields.forEach(f => initialData[f.name] = '');
-    setFormData(initialData);
+    setBulkRows([createEmptyRow(activeTab.fields)]);
     setErrorMsg('');
     setOpenDialog(true);
   };
@@ -63,16 +69,41 @@ export default function MasterData() {
     setOpenDialog(false);
   };
 
-  const handleSaveRecord = async () => {
+  const handleAddRow = () => {
+    setBulkRows(prev => [...prev, createEmptyRow(activeTab.fields)]);
+  };
+
+  const handleRemoveRow = (rowId) => {
+    setBulkRows(prev => prev.filter(r => r._id !== rowId));
+  };
+
+  const handleRowChange = (rowId, fieldName, value) => {
+    setBulkRows(prev => prev.map(r => r._id === rowId ? { ...r, [fieldName]: value } : r));
+  };
+
+  const handleSaveAll = async () => {
+    // Validate all rows have the first (required) field filled
+    const requiredField = activeTab.fields[0].name;
+    const invalid = bulkRows.some(r => !r[requiredField]?.trim());
+    if (invalid) {
+      setErrorMsg(`Please fill in the "${activeTab.fields[0].label}" field for all rows.`);
+      return;
+    }
+    setSaving(true);
+    setErrorMsg('');
     try {
-      setErrorMsg('');
-      await addMasterRecord(activeTab.endpoint, formData);
-      setSnackbar({ open: true, message: 'Record added successfully!', severity: 'success' });
+      // Save all rows concurrently
+      await Promise.all(bulkRows.map(row => {
+        const { _id, ...data } = row;
+        return addMasterRecord(activeTab.endpoint, data);
+      }));
+      setSnackbar({ open: true, message: `${bulkRows.length} record(s) added successfully!`, severity: 'success' });
       setOpenDialog(false);
       fetchData();
     } catch (error) {
-      setErrorMsg(error.response?.data?.message || 'Failed to add record');
+      setErrorMsg(error.response?.data?.message || 'Failed to save records. Some may already exist.');
     }
+    setSaving(false);
   };
 
   const processRowUpdate = async (newRow, oldRow) => {
@@ -156,27 +187,72 @@ export default function MasterData() {
         </Box>
       </Paper>
 
-      {/* Add Record Dialog */}
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 'bold' }}>Add New {activeTab.label.slice(0, -1)}</DialogTitle>
-        <DialogContent dividers>
+      {/* Bulk Add Dialog */}
+      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span>Add {activeTab.label}</span>
+          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 400 }}>
+            {bulkRows.length} row{bulkRows.length !== 1 ? 's' : ''} ready to save
+          </Typography>
+        </DialogTitle>
+        <DialogContent dividers sx={{ p: 3 }}>
           {errorMsg && <Alert severity="error" sx={{ mb: 2 }}>{errorMsg}</Alert>}
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-            {activeTab.fields.map(f => (
-              <TextField
-                key={f.name}
-                label={f.label}
-                fullWidth
-                required
-                value={formData[f.name] || ''}
-                onChange={(e) => setFormData({ ...formData, [f.name]: e.target.value })}
-              />
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {bulkRows.map((row, idx) => (
+              <Box key={row._id}>
+                {idx > 0 && <Divider sx={{ mb: 2 }} />}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                    ROW {idx + 1}
+                  </Typography>
+                  {bulkRows.length > 1 && (
+                    <Tooltip title="Remove this row">
+                      <IconButton size="small" color="error" onClick={() => handleRemoveRow(row._id)}>
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                </Box>
+                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                  {activeTab.fields.map(f => (
+                    <TextField
+                      key={f.name}
+                      label={f.label}
+                      required={f === activeTab.fields[0]}
+                      value={row[f.name]}
+                      onChange={(e) => handleRowChange(row._id, f.name, e.target.value)}
+                      sx={{ flex: '1 1 180px' }}
+                      size="small"
+                    />
+                  ))}
+                </Box>
+              </Box>
             ))}
           </Box>
+
+          {/* Add Another Row Button */}
+          <Button
+            startIcon={<AddCircleOutlineIcon />}
+            onClick={handleAddRow}
+            sx={{ mt: 3 }}
+            variant="outlined"
+            color="primary"
+            fullWidth
+          >
+            + Add Another Row
+          </Button>
         </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
+        <DialogActions sx={{ p: 2, justifyContent: 'space-between' }}>
           <Button onClick={handleCloseDialog} color="inherit">Cancel</Button>
-          <Button onClick={handleSaveRecord} variant="contained">Save Record</Button>
+          <Button 
+            onClick={handleSaveAll} 
+            variant="contained" 
+            disabled={saving}
+            startIcon={<AddIcon />}
+          >
+            {saving ? 'Saving...' : `Save All ${bulkRows.length} Record${bulkRows.length !== 1 ? 's' : ''}`}
+          </Button>
         </DialogActions>
       </Dialog>
 
