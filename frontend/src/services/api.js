@@ -53,6 +53,7 @@ export const deleteVoucher = (id, password) => api.delete(`/vouchers/${id}`, { d
 
 // Users
 export const getUsers = () => api.get('/users');
+export const createUser = (data) => api.post('/users', data);
 export const updateUser = (id, data) => api.put(`/users/${id}`, data);
 
 export default api;

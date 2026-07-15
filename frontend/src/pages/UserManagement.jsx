@@ -8,7 +8,7 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
-import { getMasterData, getUsers, updateUser } from '../services/api';
+import { getMasterData, getUsers, updateUser, createUser } from '../services/api';
 
 export default function UserManagement() {
   const [users, setUsers] = useState([]);
@@ -18,7 +18,7 @@ export default function UserManagement() {
   
   const defaultPerms = { VIEW: true, ADD: false, EDIT: false, DELETE: false };
   const [formData, setFormData] = useState({
-    name: '', email: '', role: 'EMPLOYEE', department: '', permissions: defaultPerms
+    name: '', email: '', password: '', role: 'EMPLOYEE', department: '', permissions: defaultPerms
   });
 
   useEffect(() => {
@@ -48,7 +48,7 @@ export default function UserManagement() {
         permissions: permsObj
       });
     } else {
-      setFormData({ name: '', email: '', role: 'EMPLOYEE', department: '', permissions: defaultPerms });
+      setFormData({ name: '', email: '', password: '', role: 'EMPLOYEE', department: '', permissions: defaultPerms });
     }
     setOpen(true);
   };
@@ -58,13 +58,25 @@ export default function UserManagement() {
       const permsArray = Object.keys(formData.permissions).filter(k => formData.permissions[k]);
       
       const payload = {
+        name: formData.name,
+        email: formData.email,
         role: formData.role,
         department: formData.department || null,
         permissions: permsArray
       };
 
       if (formData.id) {
-        await updateUser(formData.id, payload);
+        await updateUser(formData.id, {
+          role: formData.role,
+          department: formData.department || null,
+          permissions: permsArray
+        });
+      } else {
+        if (!formData.name || !formData.email || !formData.password) {
+          alert('Name, Email, and Password are required to create a new user.');
+          return;
+        }
+        await createUser({ ...payload, password: formData.password });
       }
       setOpen(false);
       fetchUsers();
@@ -75,7 +87,12 @@ export default function UserManagement() {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>User Management (Admin)</Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+        <Typography variant="h4" sx={{ fontWeight: 'bold' }}>User Management (Admin)</Typography>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpen()}>
+          Add New User
+        </Button>
+      </Box>
       
       <TableContainer component={Paper}>
         <Table>
@@ -115,6 +132,14 @@ export default function UserManagement() {
         <DialogTitle>{formData.id ? 'Edit User' : 'New User'}</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+            {!formData.id && (
+              <>
+                <TextField label="Name" fullWidth value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                <TextField label="Email" type="email" fullWidth value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+                <TextField label="Password" type="password" fullWidth value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} />
+              </>
+            )}
+            
             <TextField label="Role" select value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})}>
               <MenuItem value="ADMIN">ADMIN</MenuItem>
               <MenuItem value="EMPLOYEE">EMPLOYEE</MenuItem>
