@@ -151,7 +151,15 @@ export default function MasterData() {
   };
 
   const columns = [
-    { field: 'id', headerName: 'ID', width: 70 },
+    { 
+      field: 'serial', 
+      headerName: 'S.No', 
+      width: 70,
+      valueGetter: (value, row) => {
+        const index = rows.findIndex(r => r.id === row.id);
+        return index !== -1 ? index + 1 : '';
+      }
+    },
     ...activeTab.fields.map(f => {
       const isSelect = f.type === 'select';
       return {
@@ -242,7 +250,7 @@ export default function MasterData() {
             sx={{ border: 0 }}
             initialState={{
               sorting: {
-                sortModel: [{ field: 'id', sort: 'asc' }],
+                sortModel: [{ field: 'serial', sort: 'asc' }],
               },
             }}
           />
