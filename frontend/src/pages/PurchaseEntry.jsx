@@ -48,7 +48,7 @@ export default function PurchaseEntry() {
         });
       }).catch(err => {
         console.error(err);
-        setToast({ open: true, message: 'Error fetching transaction details', severity: 'error' });
+        setToast({ open: true, message: err.response?.data?.message || err.message || 'Error fetching transaction details', severity: 'error' });
       });
     }
   }, [id]);
@@ -103,7 +103,8 @@ export default function PurchaseEntry() {
       }
     } catch (err) {
       console.error(err);
-      setToast({ open: true, message: 'Error saving purchase', severity: 'error' });
+      const errorMessage = err.response?.data?.message || err.message || 'Error saving purchase';
+      setToast({ open: true, message: `Error: ${errorMessage}`, severity: 'error' });
     }
   };
 

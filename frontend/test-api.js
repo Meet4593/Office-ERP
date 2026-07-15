@@ -1,0 +1,1 @@
+const axios = require('axios'); axios.post('https://office-erp-production.up.railway.app/api/transactions', { date: '2026-07-15T00:00:00.000Z', type: 'PURCHASE', status: 'PENDING', paymentMode: 'CASH', createdByUserId: 1 }).catch(e = 
