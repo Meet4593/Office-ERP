@@ -328,6 +328,7 @@ export default function VoucherList() {
               value={formData.voucherType} 
               onChange={handleFormChange('voucherType')}
               size="small"
+              sx={{ minWidth: 150 }}
             >
               <MenuItem value="RECEIPT">Receipt (Inward)</MenuItem>
               <MenuItem value="PAYMENT">Payment (Outward)</MenuItem>
@@ -342,6 +343,7 @@ export default function VoucherList() {
               value={formData.transactionMode} 
               onChange={handleFormChange('transactionMode')}
               size="small"
+              sx={{ minWidth: 150 }}
             >
               <MenuItem value="CASH">Cash</MenuItem>
               <MenuItem value="BANK">Bank</MenuItem>
@@ -366,6 +368,7 @@ export default function VoucherList() {
               options={partyOptions}
               value={formData.partyAccountName}
               onInputChange={(e, newValue) => setFormData({ ...formData, partyAccountName: newValue })}
+              sx={{ minWidth: 150 }}
               renderInput={(params) => (
                 <TextField
                   {...params}
