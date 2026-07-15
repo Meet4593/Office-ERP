@@ -100,3 +100,21 @@ export const resetUserPassword = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: 'Error resetting password' });
   }
 };
+
+export const deleteUser = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = parseInt(id as string);
+
+    // Prevent deleting yourself
+    if (req.user?.userId === userId) {
+      return res.status(400).json({ message: 'You cannot delete your own account.' });
+    }
+
+    await prisma.user.delete({ where: { id: userId } });
+    res.json({ message: 'User deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error deleting user' });
+  }
+};

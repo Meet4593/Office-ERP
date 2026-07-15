@@ -7,8 +7,9 @@ import {
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import LockResetIcon from '@mui/icons-material/LockReset';
+import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
-import { getMasterData, getUsers, updateUser, createUser, resetUserPassword } from '../services/api';
+import { getMasterData, getUsers, updateUser, createUser, resetUserPassword, deleteUser } from '../services/api';
 
 const DEFAULT_PERMS = { VIEW: true, ADD: false, EDIT: false, DELETE: false };
 
@@ -26,6 +27,9 @@ export default function UserManagement() {
   // --- Reset password dialog state ---
   const [resetDialog, setResetDialog] = useState({ open: false, userId: null, name: '' });
   const [newPassword, setNewPassword] = useState('');
+
+  // --- Delete confirmation dialog state ---
+  const [deleteDialog, setDeleteDialog] = useState({ open: false, userId: null, name: '' });
 
   useEffect(() => {
     fetchUsers();
@@ -123,6 +127,23 @@ export default function UserManagement() {
     }
   };
 
+  // --- Delete user ---
+  const openDeleteDialog = (user) => {
+    setDeleteDialog({ open: true, userId: user.id, name: user.name });
+  };
+
+  const handleDeleteUser = async () => {
+    try {
+      await deleteUser(deleteDialog.userId);
+      showSnack(`User "${deleteDialog.name}" deleted successfully.`);
+      setDeleteDialog({ open: false, userId: null, name: '' });
+      fetchUsers();
+    } catch (err) {
+      console.error(err);
+      showSnack(err.response?.data?.message || 'Failed to delete user.', 'error');
+    }
+  };
+
   return (
     <Box sx={{ p: 3 }}>
       {/* Header */}
@@ -169,6 +190,9 @@ export default function UserManagement() {
                   </IconButton>
                   <IconButton color="warning" title="Reset password" onClick={() => openResetDialog(user)}>
                     <LockResetIcon />
+                  </IconButton>
+                  <IconButton color="error" title="Delete user" onClick={() => openDeleteDialog(user)}>
+                    <DeleteIcon />
                   </IconButton>
                 </TableCell>
               </TableRow>
@@ -297,6 +321,22 @@ export default function UserManagement() {
           <Button onClick={() => setResetDialog({ open: false, userId: null, name: '' })}>Cancel</Button>
           <Button variant="contained" color="warning" onClick={handleResetPassword}>
             Reset Password
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialog.open} onClose={() => setDeleteDialog({ open: false, userId: null, name: '' })} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontWeight: 'bold', color: 'error.main' }}>Delete User</DialogTitle>
+        <DialogContent>
+          <Alert severity="warning" sx={{ mt: 1 }}>
+            Are you sure you want to permanently delete <strong>{deleteDialog.name}</strong>? This action cannot be undone.
+          </Alert>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setDeleteDialog({ open: false, userId: null, name: '' })}>Cancel</Button>
+          <Button variant="contained" color="error" onClick={handleDeleteUser}>
+            Yes, Delete
           </Button>
         </DialogActions>
       </Dialog>
