@@ -9,7 +9,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useParams, useNavigate } from 'react-router-dom';
-import { createTransaction, updateTransaction, getTransactionById } from '../services/api';
+import { createTransaction, updateTransaction, getTransactionById, getMasterData } from '../services/api';
 import { generateInvoicePDF } from '../utils/exportUtils';
 import dayjs from 'dayjs';
 import useKeyboardNavigation from '../hooks/useKeyboardNavigation';
@@ -29,9 +29,14 @@ export default function PurchaseEntry() {
     paymentMode: 'CASH',
   });
   
+  const [masterData, setMasterData] = useState({
+    suppliers: [], customers: [], departments: [], items: [], machines: [], paymentModes: []
+  });
+  
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
 
   useEffect(() => {
+    getMasterData().then(res => setMasterData(res.data)).catch(console.error);
     if (id) {
       getTransactionById(id).then(res => {
         const data = res.data;
@@ -46,6 +51,8 @@ export default function PurchaseEntry() {
       });
     }
   }, [id]);
+
+  const partyOptions = formData.type === 'SALE' ? masterData.customers : masterData.suppliers;
 
   const handleChange = (field) => (e) => {
     setFormData({ ...formData, [field]: e.target.value });
@@ -132,10 +139,18 @@ export default function PurchaseEntry() {
             <TextField fullWidth label="Supplier Invoice Number" value={formData.supplierInvoiceNum || ''} onChange={handleChange('supplierInvoiceNum')} size="small" />
           </Grid>
           <Grid item xs={12} sm={6} md={4}>
-            <TextField fullWidth label="Part Account Name" value={formData.partAccountName || ''} onChange={handleChange('partAccountName')} size="small" />
+            <TextField fullWidth select label="Party Account Name" value={formData.partAccountName || ''} onChange={handleChange('partAccountName')} size="small">
+              {partyOptions?.map((opt) => (
+                <MenuItem key={opt.id} value={opt.name}>{opt.name}</MenuItem>
+              ))}
+            </TextField>
           </Grid>
           <Grid item xs={12} sm={6} md={4}>
-            <TextField fullWidth label="Department" value={formData.department || ''} onChange={handleChange('department')} size="small" />
+            <TextField fullWidth select label="Department" value={formData.department || ''} onChange={handleChange('department')} size="small">
+              {masterData.departments?.map((opt) => (
+                <MenuItem key={opt.id} value={opt.name}>{opt.name}</MenuItem>
+              ))}
+            </TextField>
           </Grid>
         </Grid>
 
@@ -146,13 +161,21 @@ export default function PurchaseEntry() {
         </Typography>
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6} md={3}>
-            <TextField fullWidth label="Item Name" value={formData.item || ''} onChange={handleChange('item')} size="small" />
+            <TextField fullWidth select label="Item Name" value={formData.item || ''} onChange={handleChange('item')} size="small">
+              {masterData.items?.map((opt) => (
+                <MenuItem key={opt.id} value={opt.name}>{opt.name}</MenuItem>
+              ))}
+            </TextField>
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
             <TextField fullWidth label="Detail Number" value={formData.detailNumber || ''} onChange={handleChange('detailNumber')} size="small" />
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
-            <TextField fullWidth label="Machine Number" value={formData.machineNumber || ''} onChange={handleChange('machineNumber')} size="small" />
+            <TextField fullWidth select label="Machine Number" value={formData.machineNumber || ''} onChange={handleChange('machineNumber')} size="small">
+              {masterData.machines?.filter(m => !formData.department || m.department === formData.department).map((opt) => (
+                <MenuItem key={opt.id} value={opt.machineNum}>{opt.machineNum} {opt.name ? `(${opt.name})` : ''}</MenuItem>
+              ))}
+            </TextField>
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
             <TextField fullWidth label="Service Person" value={formData.servicePerson || ''} onChange={handleChange('servicePerson')} size="small" />
@@ -194,7 +217,7 @@ export default function PurchaseEntry() {
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
             <TextField fullWidth select label="Payment Mode" value={formData.paymentMode} onChange={handleChange('paymentMode')} size="small">
-              {paymentModes.map((option) => (
+              {(masterData.paymentModes?.length > 0 ? masterData.paymentModes.map(p => p.name) : paymentModes).map((option) => (
                 <MenuItem key={option} value={option}>{option}</MenuItem>
               ))}
             </TextField>
