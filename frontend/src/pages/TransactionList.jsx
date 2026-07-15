@@ -89,13 +89,13 @@ export default function TransactionList({ type, title, newRoute }) {
     fetchTransactions();
   }, [type]);
 
-  const handleEdit = (id, rowType) => {
+  const handleEdit = (id, rowType, groupedIds) => {
     let routePrefix = '';
     if (rowType === 'PURCHASE') routePrefix = '/purchase/edit';
     else if (rowType === 'SALE') routePrefix = '/sales/edit';
     else if (rowType === 'SERVICE') routePrefix = '/services/edit';
     
-    navigate(`${routePrefix}/${id}`);
+    navigate(`${routePrefix}/${id}`, { state: { groupedIds } });
   };
 
   const openDeleteDialog = (groupedIds) => {
@@ -237,7 +237,7 @@ export default function TransactionList({ type, title, newRoute }) {
               color="primary"
               onClick={(e) => {
                 e.stopPropagation();
-                handleEdit(params.row.id, params.row.type);
+                handleEdit(params.row.id, params.row.type, params.row.groupedIds || [params.row.id]);
               }}
             >
               <EditIcon fontSize="small" />

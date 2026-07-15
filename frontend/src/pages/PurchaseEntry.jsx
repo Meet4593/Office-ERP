@@ -12,8 +12,8 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutlined';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { useParams, useNavigate } from 'react-router-dom';
-import { createTransaction, updateTransaction, getTransactionById, getMasterData } from '../services/api';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { createTransaction, updateTransaction, getTransactionById, getMasterData, deleteTransaction } from '../services/api';
 import { generateInvoicePDF } from '../utils/exportUtils';
 import dayjs from 'dayjs';
 import useKeyboardNavigation from '../hooks/useKeyboardNavigation';
@@ -23,6 +23,7 @@ const emptyItemRow = () => ({ item: '', detailNumber: '', machineNumber: '', ser
 export default function PurchaseEntry() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const handleKeyDown = useKeyboardNavigation();
   const transactionTypes = ['PURCHASE', 'SALE', 'SERVICE'];
   const paymentModes = ['CASH', 'BANK', 'UPI', 'CHEQUE'];
@@ -50,6 +51,8 @@ export default function PurchaseEntry() {
   
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
 
+  const [initialGroupedIds, setInitialGroupedIds] = useState([]);
+
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const userRole = user.role;
   const userDept = user.department;
@@ -64,34 +67,42 @@ export default function PurchaseEntry() {
   useEffect(() => {
     getMasterData().then(res => setMasterData(res.data)).catch(console.error);
     if (id) {
-      getTransactionById(id).then(res => {
-        const data = res.data;
-        setFormData({
-          date: data.date ? dayjs(data.date) : null,
-          type: data.type || 'PURCHASE',
-          status: data.status || 'PENDING',
-          paymentMode: data.paymentMode || 'CASH',
-          transactionNumber: data.transactionNumber || '',
-          supplierInvoiceNum: data.supplierInvoiceNum || '',
-          partAccountName: data.partAccountName || '',
-          department: data.department || '',
-          paidDate: data.paidDate ? dayjs(data.paidDate) : null,
-          remarks: data.remarks || '',
+      const groupedIds = location.state?.groupedIds || [id];
+      setInitialGroupedIds(groupedIds);
+      
+      Promise.all(groupedIds.map(gid => getTransactionById(gid)))
+        .then(responses => {
+          const itemsData = responses.map(res => res.data);
+          const firstData = itemsData[0];
+          
+          setFormData({
+            date: firstData.date ? dayjs(firstData.date) : null,
+            type: firstData.type || 'PURCHASE',
+            status: firstData.status || 'PENDING',
+            paymentMode: firstData.paymentMode || 'CASH',
+            transactionNumber: firstData.transactionNumber || '',
+            supplierInvoiceNum: firstData.supplierInvoiceNum || '',
+            partAccountName: firstData.partAccountName || '',
+            department: firstData.department || '',
+            paidDate: firstData.paidDate ? dayjs(firstData.paidDate) : null,
+            remarks: firstData.remarks || '',
+          });
+
+          setItemRows(itemsData.map(data => ({
+            id: data.id,
+            item: data.item || '',
+            detailNumber: data.detailNumber || '',
+            machineNumber: data.machineNumber || '',
+            servicePerson: data.servicePerson || '',
+            description: data.description || '',
+            unit: data.unit || '',
+            rate: data.rate || '',
+          })));
+        })
+        .catch(err => {
+          console.error(err);
+          setToast({ open: true, message: 'Error fetching transactions', severity: 'error' });
         });
-        // In edit mode, populate item rows from existing data
-        setItemRows([{
-          item: data.item || '',
-          detailNumber: data.detailNumber || '',
-          machineNumber: data.machineNumber || '',
-          servicePerson: data.servicePerson || '',
-          description: data.description || '',
-          unit: data.unit || '',
-          rate: data.rate || '',
-        }]);
-      }).catch(err => {
-        console.error(err);
-        setToast({ open: true, message: err.response?.data?.message || 'Error fetching transaction', severity: 'error' });
-      });
     }
   }, [id]);
 
@@ -145,46 +156,76 @@ export default function PurchaseEntry() {
   const handleSave = async () => {
     try {
       if (id) {
-        // Edit mode: single row update via FormData
-        const data = new FormData();
-        const allData = { ...formData, ...itemRows[0] };
-        Object.keys(allData).forEach(key => {
-          const val = allData[key];
-          if (val === null || val === undefined) return;
-          if ((key === 'date' || key === 'paidDate') && val?.isValid) {
-            if (val.isValid()) data.append(key, val.toISOString());
+        // Edit mode: Handle updates, additions, and deletions
+        const currentItemIds = itemRows.filter(r => r.id).map(r => r.id);
+        const idsToDelete = initialGroupedIds.filter(gid => !currentItemIds.includes(gid));
+        
+        for (const deleteId of idsToDelete) {
+          await deleteTransaction(deleteId, ''); 
+        }
+
+        const newRowsData = [];
+        for (const row of itemRows) {
+          if (row.id) {
+            const data = new FormData();
+            const allData = { ...formData, ...row };
+            Object.keys(allData).forEach(key => {
+              const val = allData[key];
+              if (val === null || val === undefined) return;
+              if ((key === 'date' || key === 'paidDate') && val?.isValid) {
+                if (val.isValid()) data.append(key, val.toISOString());
+              } else if (key !== 'attachment') {
+                data.append(key, val);
+              }
+            });
+            if (formData.attachment) data.append('attachment', formData.attachment);
+            await updateTransaction(row.id, data);
           } else {
-            data.append(key, val);
+            // New row added in edit mode
+            newRowsData.push(row);
           }
-        });
-        const unit = parseFloat(itemRows[0].unit) || 0;
-        const rate = parseFloat(itemRows[0].rate) || 0;
-        data.append('totalAmount', (unit * rate).toFixed(2));
-        await updateTransaction(id, data);
+        }
+        
+        if (newRowsData.length > 0) {
+          const data = new FormData();
+          Object.keys(formData).forEach(key => {
+            const val = formData[key];
+            if (val === null || val === undefined) return;
+            if ((key === 'date' || key === 'paidDate') && val?.isValid) {
+              if (val.isValid()) data.append(key, val.toISOString());
+            } else if (key !== 'attachment') {
+              data.append(key, val);
+            }
+          });
+          if (formData.attachment) data.append('attachment', formData.attachment);
+          data.append('items', JSON.stringify(newRowsData.filter(r => r.item || r.rate)));
+          await createTransaction(data);
+        }
+
         setToast({ open: true, message: 'Transaction updated successfully!', severity: 'success' });
+        setTimeout(() => navigate(-1), 1500);
       } else {
         // Create mode: send header + items array via FormData
         const data = new FormData();
-        const header = { ...formData };
-        Object.keys(header).forEach(key => {
-          const val = header[key];
+        Object.keys(formData).forEach(key => {
+          const val = formData[key];
           if (val === null || val === undefined) return;
           if ((key === 'date' || key === 'paidDate') && val?.isValid) {
             if (val.isValid()) data.append(key, val.toISOString());
-          } else {
+          } else if (key !== 'attachment') {
             data.append(key, val);
           }
         });
-        // Attach items as JSON string
+        if (formData.attachment) data.append('attachment', formData.attachment);
         data.append('items', JSON.stringify(itemRows.filter(r => r.item || r.rate)));
+        
         await createTransaction(data);
         setToast({ open: true, message: `${itemRows.length} item(s) saved successfully!`, severity: 'success' });
-        setTimeout(() => navigate('/purchase'), 1500);
+        setTimeout(() => navigate(0), 1500); // reload form
       }
     } catch (err) {
       console.error(err);
-      const errorMessage = err.response?.data?.message || err.message || 'Error saving transaction';
-      setToast({ open: true, message: `Error: ${errorMessage}`, severity: 'error' });
+      setToast({ open: true, message: err.response?.data?.message || 'An error occurred', severity: 'error' });
     }
   };
 
@@ -298,11 +339,9 @@ export default function PurchaseEntry() {
           <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 600 }}>
             Item & Service Details
           </Typography>
-          {!id && (
-            <Button variant="outlined" color="primary" size="small" startIcon={<AddCircleOutlineIcon />} onClick={handleAddRow}>
-              Add Row
-            </Button>
-          )}
+          <Button variant="outlined" color="primary" size="small" startIcon={<AddCircleOutlineIcon />} onClick={handleAddRow}>
+            Add Row
+          </Button>
         </Box>
 
         <TableContainer component={Paper} variant="outlined" sx={{ mb: 2 }}>
@@ -317,7 +356,7 @@ export default function PurchaseEntry() {
                 <TableCell sx={{ color: 'white', minWidth: 90 }}>Qty/Unit</TableCell>
                 <TableCell sx={{ color: 'white', minWidth: 100 }}>Rate (₹)</TableCell>
                 <TableCell align="right" sx={{ color: 'white', minWidth: 100 }}>Total (₹)</TableCell>
-                {!id && <TableCell sx={{ color: 'white', width: 40 }}></TableCell>}
+                <TableCell sx={{ color: 'white', width: 40 }}></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -366,38 +405,34 @@ export default function PurchaseEntry() {
                   <TableCell align="right" sx={{ fontWeight: 600, pr: 1 }}>
                     {getRowTotal(row).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </TableCell>
-                  {!id && (
-                    <TableCell sx={{ p: 0.5 }}>
-                      {itemRows.length > 1 && (
-                        <IconButton size="small" color="error" onClick={() => handleRemoveRow(index)}>
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      )}
-                    </TableCell>
-                  )}
+                  <TableCell sx={{ p: 0.5 }}>
+                    {itemRows.length > 1 && (
+                      <IconButton size="small" color="error" onClick={() => handleRemoveRow(index)}>
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    )}
+                  </TableCell>
                 </TableRow>
               ))}
               {/* Grand Total Row */}
               <TableRow sx={{ bgcolor: '#f5f5f5' }}>
-                <TableCell colSpan={!id ? 7 : 7} sx={{ fontWeight: 'bold', textAlign: 'right', pr: 2 }}>
+                <TableCell colSpan={7} sx={{ fontWeight: 'bold', textAlign: 'right', pr: 2 }}>
                   Grand Total:
                 </TableCell>
                 <TableCell align="right" sx={{ fontWeight: 'bold', pr: 1 }}>
                   ₹ {grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                 </TableCell>
-                {!id && <TableCell />}
+                <TableCell />
               </TableRow>
             </TableBody>
           </Table>
         </TableContainer>
 
-        {!id && (
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-            <Button variant="text" color="primary" startIcon={<AddCircleOutlineIcon />} onClick={handleAddRow}>
-              + Add Another Item
-            </Button>
-          </Box>
-        )}
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+          <Button variant="text" color="primary" startIcon={<AddCircleOutlineIcon />} onClick={handleAddRow}>
+            + Add Another Item
+          </Button>
+        </Box>
 
         <Divider sx={{ my: 4 }} />
 
