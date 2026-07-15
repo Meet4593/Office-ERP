@@ -114,43 +114,51 @@ export default function PartyLedger() {
   const handlePrintPDF = () => {
     if (!ledgerData) return;
 
-    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
     const pageW = doc.internal.pageSize.getWidth();
 
-    // ── Header ─────────────────────────────────────────
-    doc.setFillColor(25, 118, 210);
-    doc.rect(0, 0, pageW, 28, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
-    doc.text('PARTY LEDGER', pageW / 2, 12, { align: 'center' });
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'normal');
-    doc.text(selectedParty, pageW / 2, 21, { align: 'center' });
+    const fmt = (n) => {
+      if (!n && n !== 0) return '-';
+      return 'Rs. ' + Math.abs(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
+    const fmtBal = (n) => {
+      if (n === undefined || n === null) return '-';
+      return fmt(n) + (n > 0 ? ' Dr' : n < 0 ? ' Cr' : '');
+    };
 
-    // ── Period info ────────────────────────────────────
-    doc.setTextColor(60, 60, 60);
+    // ── Blue Header Banner ──────────────────────────────
+    doc.setFillColor(25, 118, 210);
+    doc.rect(0, 0, pageW, 26, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.text('PARTY LEDGER', pageW / 2, 11, { align: 'center' });
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text(selectedParty, pageW / 2, 20, { align: 'center' });
+
+    // ── Sub-header info ─────────────────────────────────
+    doc.setTextColor(50, 50, 50);
     doc.setFontSize(9);
     const period = `Period: ${startDate ? startDate.format('DD/MM/YYYY') : 'All'} to ${endDate ? endDate.format('DD/MM/YYYY') : 'All'}`;
     const printed = `Printed: ${dayjs().format('DD/MM/YYYY hh:mm A')}`;
-    doc.text(period, 14, 36);
-    doc.text(printed, pageW - 14, 36, { align: 'right' });
+    doc.text(period, 14, 33);
+    doc.text(printed, pageW - 14, 33, { align: 'right' });
 
-    // ── Opening Balance ───────────────────────────────
-    const ob = ledgerData.openingBalance;
-    doc.setFontSize(9);
-    doc.text(`Opening Balance: ${ob >= 0 ? '₹ ' + ob.toLocaleString('en-IN') + ' Dr' : '₹ ' + Math.abs(ob).toLocaleString('en-IN') + ' Cr'}`, 14, 43);
+    // ── Opening Balance ─────────────────────────────────
+    const ob = ledgerData.openingBalance || 0;
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Opening Balance:  ${fmtBal(ob)}`, 14, 40);
+    doc.setFont('helvetica', 'normal');
 
-    // ── Table ─────────────────────────────────────────
+    // ── Build table rows ────────────────────────────────
     const tableBody = ledgerData.entries.map(entry => [
       dayjs(entry.date).format('DD/MM/YYYY'),
       entry.particulars || '',
       entry.description || '',
-      entry.debit  ? '₹ ' + entry.debit.toLocaleString('en-IN')  : '—',
-      entry.credit ? '₹ ' + entry.credit.toLocaleString('en-IN') : '—',
-      (entry.balance >= 0
-        ? '₹ ' + entry.balance.toLocaleString('en-IN') + ' Dr'
-        : '₹ ' + Math.abs(entry.balance).toLocaleString('en-IN') + ' Cr'),
+      entry.debit  ? fmt(entry.debit)  : '-',
+      entry.credit ? fmt(entry.credit) : '-',
+      fmtBal(entry.balance),
     ]);
 
     const totalDebit  = ledgerData.entries.reduce((s, e) => s + (e.debit  || 0), 0);
@@ -158,41 +166,56 @@ export default function PartyLedger() {
     const cb = ledgerData.closingBalance;
 
     autoTable(doc, {
-      startY: 47,
-      head: [['Date', 'Particulars', 'Description', 'Debit (₹)', 'Credit (₹)', 'Balance (₹)']],
+      startY: 44,
+      head: [['Date', 'Particulars', 'Description', 'Debit (Rs.)', 'Credit (Rs.)', 'Balance (Rs.)']],
       body: tableBody,
-      foot: [[
-        '', 'CLOSING BALANCE', '',
-        '₹ ' + totalDebit.toLocaleString('en-IN'),
-        '₹ ' + totalCredit.toLocaleString('en-IN'),
-        cb >= 0
-          ? '₹ ' + cb.toLocaleString('en-IN') + ' Dr'
-          : '₹ ' + Math.abs(cb).toLocaleString('en-IN') + ' Cr',
-      ]],
-      styles: { fontSize: 8, cellPadding: 2.5 },
-      headStyles: { fillColor: [25, 118, 210], textColor: 255, fontStyle: 'bold' },
-      footStyles: { fillColor: [227, 242, 253], textColor: [30, 30, 30], fontStyle: 'bold' },
-      columnStyles: {
-        0: { cellWidth: 22 },
-        1: { cellWidth: 38 },
-        2: { cellWidth: 40 },
-        3: { cellWidth: 26, halign: 'right' },
-        4: { cellWidth: 26, halign: 'right' },
-        5: { cellWidth: 30, halign: 'right' },
+      foot: [['', 'CLOSING BALANCE', '', fmt(totalDebit), fmt(totalCredit), fmtBal(cb)]],
+      styles: {
+        fontSize: 8.5,
+        cellPadding: { top: 3, bottom: 3, left: 4, right: 4 },
+        font: 'helvetica',
+        textColor: [30, 30, 30],
+        lineColor: [200, 200, 200],
+        lineWidth: 0.1,
       },
-      alternateRowStyles: { fillColor: [248, 250, 255] },
-      margin: { left: 14, right: 14 },
+      headStyles: {
+        fillColor: [25, 118, 210],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        fontSize: 9,
+        halign: 'center',
+      },
+      footStyles: {
+        fillColor: [227, 242, 253],
+        textColor: [20, 20, 20],
+        fontStyle: 'bold',
+        fontSize: 9,
+      },
+      columnStyles: {
+        0: { cellWidth: 26, halign: 'center' },
+        1: { cellWidth: 60 },
+        2: { cellWidth: 65 },
+        3: { cellWidth: 38, halign: 'right' },
+        4: { cellWidth: 38, halign: 'right' },
+        5: { cellWidth: 42, halign: 'right' },
+      },
+      alternateRowStyles: { fillColor: [245, 248, 255] },
+      margin: { left: 10, right: 10 },
       showFoot: 'lastPage',
+      didDrawPage: (data) => {
+        // Page footer
+        const pCount = doc.internal.getNumberOfPages();
+        const pCurr  = doc.internal.getCurrentPageInfo().pageNumber;
+        doc.setFontSize(7);
+        doc.setTextColor(150);
+        doc.text(
+          `Page ${pCurr} of ${pCount}`,
+          pageW / 2,
+          doc.internal.pageSize.getHeight() - 5,
+          { align: 'center' }
+        );
+      },
     });
-
-    // ── Footer on every page ──────────────────────────
-    const pageCount = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFontSize(7);
-      doc.setTextColor(150);
-      doc.text(`Page ${i} of ${pageCount}`, pageW / 2, doc.internal.pageSize.getHeight() - 6, { align: 'center' });
-    }
 
     doc.save(`${selectedParty}_Ledger_${dayjs().format('YYYYMMDD')}.pdf`);
   };
