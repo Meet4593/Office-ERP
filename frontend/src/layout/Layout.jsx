@@ -74,6 +74,10 @@ export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const menuItems = user?.role === 'ADMIN' 
+    ? [...baseMenuItems, { text: 'User Management', icon: <PersonIcon />, path: '/users' }]
+    : baseMenuItems;
+
   // ── Global keyboard shortcuts ──────────────────────────────────────────────
   // Escape → go back to previous page
   // Alt + 1-9 → navigate to nth sidebar menu item
@@ -112,9 +116,6 @@ export default function Layout() {
     }
   }, []);
 
-  const menuItems = user?.role === 'ADMIN' 
-    ? [...baseMenuItems, { text: 'User Management', icon: <PersonIcon />, path: '/users' }]
-    : baseMenuItems;
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
