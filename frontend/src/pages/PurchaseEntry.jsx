@@ -139,7 +139,7 @@ export default function PurchaseEntry() {
             <TextField fullWidth label="Supplier Invoice Number" value={formData.supplierInvoiceNum || ''} onChange={handleChange('supplierInvoiceNum')} size="small" />
           </Grid>
           <Grid item xs={12} sm={6} md={4}>
-            <TextField fullWidth select label="Party Account Name" value={formData.partAccountName || ''} onChange={handleChange('partAccountName')} size="small" SelectProps={{ displayEmpty: true }} sx={{ minWidth: 150 }}>
+            <TextField fullWidth select label="Party Account Name" value={formData.partAccountName || ''} onChange={handleChange('partAccountName')} size="small" SelectProps={{ displayEmpty: true }} sx={{ minWidth: 190 }}>
               <MenuItem value=""><em>Select...</em></MenuItem>
               {partyOptions?.map((opt) => (
                 <MenuItem key={opt.id} value={opt.name}>{opt.name}</MenuItem>
@@ -147,7 +147,7 @@ export default function PurchaseEntry() {
             </TextField>
           </Grid>
           <Grid item xs={12} sm={6} md={4}>
-            <TextField fullWidth select label="Department" value={formData.department || ''} onChange={handleChange('department')} size="small" SelectProps={{ displayEmpty: true }} sx={{ minWidth: 150 }}>
+            <TextField fullWidth select label="Department" value={formData.department || ''} onChange={handleChange('department')} size="small" SelectProps={{ displayEmpty: true }} sx={{ minWidth: 190 }}>
               <MenuItem value=""><em>Select...</em></MenuItem>
               {masterData.departments?.map((opt) => (
                 <MenuItem key={opt.id} value={opt.name}>{opt.name}</MenuItem>
@@ -163,7 +163,7 @@ export default function PurchaseEntry() {
         </Typography>
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6} md={3}>
-            <TextField fullWidth select label="Item Name" value={formData.item || ''} onChange={handleChange('item')} size="small" SelectProps={{ displayEmpty: true }} sx={{ minWidth: 150 }}>
+            <TextField fullWidth select label="Item Name" value={formData.item || ''} onChange={handleChange('item')} size="small" SelectProps={{ displayEmpty: true }} sx={{ minWidth: 190 }}>
               <MenuItem value=""><em>Select...</em></MenuItem>
               {masterData.items?.map((opt) => (
                 <MenuItem key={opt.id} value={opt.name}>{opt.name}</MenuItem>
@@ -174,7 +174,7 @@ export default function PurchaseEntry() {
             <TextField fullWidth label="Detail Number" value={formData.detailNumber || ''} onChange={handleChange('detailNumber')} size="small" />
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
-            <TextField fullWidth select label="Machine Number" value={formData.machineNumber || ''} onChange={handleChange('machineNumber')} size="small" SelectProps={{ displayEmpty: true }} sx={{ minWidth: 150 }}>
+            <TextField fullWidth select label="Machine Number" value={formData.machineNumber || ''} onChange={handleChange('machineNumber')} size="small" SelectProps={{ displayEmpty: true }} sx={{ minWidth: 190 }}>
               <MenuItem value=""><em>Select...</em></MenuItem>
               {masterData.machines?.filter(m => !formData.department || m.department === formData.department).map((opt) => (
                 <MenuItem key={opt.id} value={opt.machineNum}>{opt.machineNum} {opt.name ? `(${opt.name})` : ''}</MenuItem>
