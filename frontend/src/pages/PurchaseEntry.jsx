@@ -158,6 +158,8 @@ export default function PurchaseEntry() {
               fullWidth
               size="small"
               freeSolo
+              autoHighlight
+              autoSelect
               forcePopupIcon={true}
               options={partyOptions?.map(o => o.name) || []}
               sx={{ minWidth: 200 }}
@@ -196,6 +198,8 @@ export default function PurchaseEntry() {
               fullWidth
               size="small"
               freeSolo
+              autoHighlight
+              autoSelect
               forcePopupIcon={true}
               options={masterData.departments?.map(o => o.name) || []}
               sx={{ minWidth: 200 }}
@@ -242,6 +246,8 @@ export default function PurchaseEntry() {
               fullWidth
               size="small"
               freeSolo
+              autoHighlight
+              autoSelect
               forcePopupIcon={true}
               options={masterData.items?.map(o => o.name) || []}
               sx={{ minWidth: 200 }}
@@ -283,6 +289,8 @@ export default function PurchaseEntry() {
               fullWidth
               size="small"
               freeSolo
+              autoHighlight
+              autoSelect
               forcePopupIcon={true}
               options={(masterData.machines || []).filter(m => !formData.department || m.department === formData.department).map(o => `${o.machineNum} ${o.name ? `(${o.name})` : ''}`.trim())}
               sx={{ minWidth: 200 }}
