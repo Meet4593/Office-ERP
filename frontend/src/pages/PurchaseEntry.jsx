@@ -84,6 +84,11 @@ export default function PurchaseEntry() {
         }
       });
       
+      // Ensure totalAmount is calculated and appended
+      const unit = parseFloat(formData.unit) || 0;
+      const rate = parseFloat(formData.rate) || 0;
+      data.append('totalAmount', (unit * rate).toFixed(2));
+
       if (id) {
         await updateTransaction(id, data);
         setToast({ open: true, message: 'Purchase updated successfully!', severity: 'success' });
@@ -140,48 +145,78 @@ export default function PurchaseEntry() {
             <TextField fullWidth label="Supplier Invoice Number" value={formData.supplierInvoiceNum || ''} onChange={handleChange('supplierInvoiceNum')} size="small" />
           </Grid>
           <Grid item xs={12} sm={6} md={4}>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Autocomplete
-                fullWidth
-                size="small"
-                freeSolo
-                forcePopupIcon={true}
-                options={partyOptions?.map(o => o.name) || []}
-                value={formData.partAccountName || ''}
-                onInputChange={(e, newValue) => setFormData({ ...formData, partAccountName: newValue })}
-                sx={{ flex: 1, minWidth: 150 }}
-                renderInput={(params) => (
-                  <TextField {...params} label="Party Account Name" size="small" fullWidth />
-                )}
-              />
-              <Tooltip title="Add New Party">
-                <Button variant="outlined" size="small" sx={{ minWidth: '40px', p: 0 }} onClick={() => handleAddNewMasterData(formData.transactionType === 'PURCHASE' ? 'suppliers' : 'customers')}>
-                  <AddIcon />
-                </Button>
-              </Tooltip>
-            </Box>
+            <Autocomplete
+              fullWidth
+              size="small"
+              freeSolo
+              forcePopupIcon={true}
+              options={partyOptions?.map(o => o.name) || []}
+              value={formData.partAccountName || ''}
+              onChange={(e, newValue) => setFormData({ ...formData, partAccountName: newValue || '' })}
+              onInputChange={(e, newInputValue) => setFormData({ ...formData, partAccountName: newInputValue || '' })}
+              renderInput={(params) => (
+                <TextField 
+                  {...params} 
+                  label="Party Account Name" 
+                  size="small" 
+                  fullWidth 
+                  InputProps={{
+                    ...params.InputProps,
+                    endAdornment: (
+                      <React.Fragment>
+                        <Tooltip title="Add New Party">
+                          <IconButton 
+                            size="small" 
+                            onClick={(e) => { e.stopPropagation(); handleAddNewMasterData(formData.type === 'PURCHASE' ? 'suppliers' : 'customers'); }}
+                            sx={{ mr: -1 }}
+                          >
+                            <AddIcon fontSize="small" color="primary" />
+                          </IconButton>
+                        </Tooltip>
+                        {params.InputProps.endAdornment}
+                      </React.Fragment>
+                    ),
+                  }}
+                />
+              )}
+            />
           </Grid>
           <Grid item xs={12} sm={6} md={4}>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Autocomplete
-                fullWidth
-                size="small"
-                freeSolo
-                forcePopupIcon={true}
-                options={masterData.departments?.map(o => o.name) || []}
-                value={formData.department || ''}
-                onInputChange={(e, newValue) => setFormData({ ...formData, department: newValue })}
-                sx={{ flex: 1, minWidth: 150 }}
-                renderInput={(params) => (
-                  <TextField {...params} label="Department" size="small" fullWidth />
-                )}
-              />
-              <Tooltip title="Add New Department">
-                <Button variant="outlined" size="small" sx={{ minWidth: '40px', p: 0 }} onClick={() => handleAddNewMasterData('departments')}>
-                  <AddIcon />
-                </Button>
-              </Tooltip>
-            </Box>
+            <Autocomplete
+              fullWidth
+              size="small"
+              freeSolo
+              forcePopupIcon={true}
+              options={masterData.departments?.map(o => o.name) || []}
+              value={formData.department || ''}
+              onChange={(e, newValue) => setFormData({ ...formData, department: newValue || '' })}
+              onInputChange={(e, newInputValue) => setFormData({ ...formData, department: newInputValue || '' })}
+              renderInput={(params) => (
+                <TextField 
+                  {...params} 
+                  label="Department" 
+                  size="small" 
+                  fullWidth 
+                  InputProps={{
+                    ...params.InputProps,
+                    endAdornment: (
+                      <React.Fragment>
+                        <Tooltip title="Add New Department">
+                          <IconButton 
+                            size="small" 
+                            onClick={(e) => { e.stopPropagation(); handleAddNewMasterData('departments'); }}
+                            sx={{ mr: -1 }}
+                          >
+                            <AddIcon fontSize="small" color="primary" />
+                          </IconButton>
+                        </Tooltip>
+                        {params.InputProps.endAdornment}
+                      </React.Fragment>
+                    ),
+                  }}
+                />
+              )}
+            />
           </Grid>
         </Grid>
 
@@ -192,51 +227,81 @@ export default function PurchaseEntry() {
         </Typography>
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6} md={3}>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Autocomplete
-                fullWidth
-                size="small"
-                freeSolo
-                forcePopupIcon={true}
-                options={masterData.items?.map(o => o.name) || []}
-                value={formData.item || ''}
-                onInputChange={(e, newValue) => setFormData({ ...formData, item: newValue })}
-                sx={{ flex: 1, minWidth: 150 }}
-                renderInput={(params) => (
-                  <TextField {...params} label="Item Name" size="small" fullWidth />
-                )}
-              />
-              <Tooltip title="Add New Item">
-                <Button variant="outlined" size="small" sx={{ minWidth: '40px', p: 0 }} onClick={() => handleAddNewMasterData('items')}>
-                  <AddIcon />
-                </Button>
-              </Tooltip>
-            </Box>
+            <Autocomplete
+              fullWidth
+              size="small"
+              freeSolo
+              forcePopupIcon={true}
+              options={masterData.items?.map(o => o.name) || []}
+              value={formData.item || ''}
+              onChange={(e, newValue) => setFormData({ ...formData, item: newValue || '' })}
+              onInputChange={(e, newInputValue) => setFormData({ ...formData, item: newInputValue || '' })}
+              renderInput={(params) => (
+                <TextField 
+                  {...params} 
+                  label="Item Name" 
+                  size="small" 
+                  fullWidth 
+                  InputProps={{
+                    ...params.InputProps,
+                    endAdornment: (
+                      <React.Fragment>
+                        <Tooltip title="Add New Item">
+                          <IconButton 
+                            size="small" 
+                            onClick={(e) => { e.stopPropagation(); handleAddNewMasterData('items'); }}
+                            sx={{ mr: -1 }}
+                          >
+                            <AddIcon fontSize="small" color="primary" />
+                          </IconButton>
+                        </Tooltip>
+                        {params.InputProps.endAdornment}
+                      </React.Fragment>
+                    ),
+                  }}
+                />
+              )}
+            />
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
             <TextField fullWidth label="Detail Number" value={formData.detailNumber || ''} onChange={handleChange('detailNumber')} size="small" />
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Autocomplete
-                fullWidth
-                size="small"
-                freeSolo
-                forcePopupIcon={true}
-                options={masterData.machines?.filter(m => !formData.department || m.department === formData.department).map(o => `${o.machineNum} ${o.name ? `(${o.name})` : ''}`.trim()) || []}
-                value={formData.machineNumber || ''}
-                onInputChange={(e, newValue) => setFormData({ ...formData, machineNumber: newValue })}
-                sx={{ flex: 1, minWidth: 150 }}
-                renderInput={(params) => (
-                  <TextField {...params} label="Machine Number" size="small" fullWidth />
-                )}
-              />
-              <Tooltip title="Add New Machine">
-                <Button variant="outlined" size="small" sx={{ minWidth: '40px', p: 0 }} onClick={() => handleAddNewMasterData('machines')}>
-                  <AddIcon />
-                </Button>
-              </Tooltip>
-            </Box>
+            <Autocomplete
+              fullWidth
+              size="small"
+              freeSolo
+              forcePopupIcon={true}
+              options={masterData.machines?.filter(m => !formData.department || m.department === formData.department).map(o => `${o.machineNum} ${o.name ? `(${o.name})` : ''}`.trim()) || []}
+              value={formData.machineNumber || ''}
+              onChange={(e, newValue) => setFormData({ ...formData, machineNumber: newValue || '' })}
+              onInputChange={(e, newInputValue) => setFormData({ ...formData, machineNumber: newInputValue || '' })}
+              renderInput={(params) => (
+                <TextField 
+                  {...params} 
+                  label="Machine Number" 
+                  size="small" 
+                  fullWidth 
+                  InputProps={{
+                    ...params.InputProps,
+                    endAdornment: (
+                      <React.Fragment>
+                        <Tooltip title="Add New Machine">
+                          <IconButton 
+                            size="small" 
+                            onClick={(e) => { e.stopPropagation(); handleAddNewMasterData('machines'); }}
+                            sx={{ mr: -1 }}
+                          >
+                            <AddIcon fontSize="small" color="primary" />
+                          </IconButton>
+                        </Tooltip>
+                        {params.InputProps.endAdornment}
+                      </React.Fragment>
+                    ),
+                  }}
+                />
+              )}
+            />
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
             <TextField fullWidth label="Service Person" value={formData.servicePerson || ''} onChange={handleChange('servicePerson')} size="small" />
