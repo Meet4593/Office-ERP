@@ -6,7 +6,6 @@ import {
 import { DataGrid, GridToolbar, GridActionsCellItem } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { getMasterData, addMasterRecord, updateMasterRecord, deleteMasterRecord } from '../services/api';
 
 const tabsConfig = [
@@ -233,7 +232,7 @@ export default function MasterData() {
 
           {/* Add Another Row Button */}
           <Button
-            startIcon={<AddCircleOutlineIcon />}
+            startIcon={<AddIcon />}
             onClick={handleAddRow}
             sx={{ mt: 3 }}
             variant="outlined"
